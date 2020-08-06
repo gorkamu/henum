@@ -27,8 +27,8 @@ class IP(object):
 			try:
 				self.ip = socket.gethostbyname(self.hostname)
 			except Exception as e:
-				self.ip = ""
-		else:
+				raise Exception("Cannot get a valid IP address for that hostname")
+		else:			
 			raise Exception("No hostname or IP address given")
 
 	def get(self):
@@ -43,7 +43,7 @@ class DNS(object):
 			self.hostname = hostname.strip()
 			self.log_level = log_level
 		else:
-			pass
+			raise Exception("that's not a valid hostname")
 
 	def get(self):
 		results = {}
@@ -61,7 +61,7 @@ class DNS(object):
 
 			return results
 		except Exception as e:
-			raise Exception("No DNS records found")
+			raise Exception("error retrieving DNS records")
 
 class CMSSCAN(object):
 	def __init__(self, hostname, log_level=0, intense_scan=False):
@@ -75,7 +75,7 @@ class CMSSCAN(object):
 			self.log_level = log_level
 			self.intense_scan = intense_scan
 		else:
-			pass
+			raise Exception("that's not a valid hostname")
 
 	def wpscan(self):
 		if self.log_level > 1:
@@ -267,19 +267,17 @@ class CMSSCAN(object):
 
 				for plugin in plugins:
 					try:
-						plug_path = self.schema+self.hostname+"/wp-content/plugins/"+plugin
-						print(plug_path)
-						p = request.get(url=plug_path)
-						if p.status_code == 200:
-							list.append(plug_path.split("/")[-2])
+						plug_path = self.schema+self.hostname+"/wp-content/plugins/"+plugin	
+						p = requests.get(url=plug_path)						
+						if 200 == p.status_code or 403 == p.status_code:
+							list.append(plug_path.split("/")[-1])
 					except Exception as e:
 						pass
 
 				file.close()
 				self.results.update({'plugins': list})
 			else:
-				print("No plugins file exists")
-				exit()
+				raise Exception("wp_plugins.txt file is missing")
 
 	def get_theme(self):
 		if self.provider == 'Wordpress':			
@@ -334,7 +332,7 @@ class WHOIS(object):
 			self.hostname = hostname.strip()
 			self.log_level = log_level
 		else:
-			pass
+			raise Exception("that's not a valid hostname")
 
 	def get(self):
 		try:
@@ -349,7 +347,7 @@ class WHOIS(object):
 
 			return results
 		except Exception as e:
-			pass
+			raise Exception("error retrieving WHOIS information")
 
 class Wappa(object):
 	def __init__(self, hostname, log_level=0):
@@ -359,7 +357,7 @@ class Wappa(object):
 			self.user_agent = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36'}
 			self.log_level = log_level
 		else:
-			pass
+			raise Exception("that's not a valid hostname")
 
 	def get(self):
 		try:
@@ -369,7 +367,7 @@ class Wappa(object):
 			w = Wappalyzer()
 			return w.analyze(self.schema + self.hostname)
 		except Exception as e:
-			raise e
+			raise Exception("error recovering used technology")
 
 class LOC(object):
 	def __init__(self, ip, log_level=0):
@@ -377,7 +375,7 @@ class LOC(object):
 			self.ip = ip
 			self.log_level = log_level
 		else:
-			pass
+			raise Exception("that's not a valid IP address")
 
 	def get(self):
 		if self.log_level != 0:
@@ -398,16 +396,17 @@ class Subdomains(object):
 			self.hostname = hostname.strip()
 			self.log_level = log_level
 		else:
-			pass
+			raise Exception("that's not a valid hostname")
 
 	def get(self):
 		if self.log_level != 0:
 			print("	%s[%s+%s] Performing a %sSubdomain %sscan" % (fg(45), fg(46), fg(45), fg(15), fg(45)))
 				
-		if path.exists("subdomains.txt"):
+		if path.exists("subdomains.txt"):				
 			file = open("subdomains.txt", "r")
 			subdomains = file.read().split("\n")
 			list = []
+
 			for f in subdomains:
 				try:					
 					a = dns.resolver.query("{}.{}".format(f, self.hostname), "A")
@@ -421,8 +420,7 @@ class Subdomains(object):
 				return list		
 			
 		else:
-			print("Not subdomains file found")
-			exit()
+			raise Exception("subdomains.txt file is missing")
 
 
 
@@ -490,7 +488,8 @@ if __name__ == '__main__':
 	try:
 		main()
 	except Exception as ex:
-		print(str(ex))
+		msg = "\n %s[%s+%s] Error: %s{}\n".format(str(ex))
+		print(msg % (fg(9), fg(208), fg(9), fg(15)))
 		exit()
 	except KeyboardInterrupt as e:
 		exit()
