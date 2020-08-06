@@ -310,9 +310,9 @@ class CMSSCAN(object):
 
 		while self.provider is None:
 			self.wpscan()	
-			self.joomlascan()
-			self.magentoscan()
-			self.drupalscan()
+			#self.joomlascan()
+			#self.magentoscan()
+			#self.drupalscan()
 
 			if self.provider is None:
 				self.provider = 'undefined'
@@ -461,6 +461,9 @@ def main():
 	banner()
 	arg = arg_parser()
 
+	#output_print(1)
+	#exit()
+
 	if arg.intense:
 		print(" %s[%s+%s] Warning: %sYou have chosen an %sintense scan. %sThis option will take %ssome time to be completed%s.\n" % (fg(208), fg(196), fg(208), fg(15), fg(208), fg(15), attr(4), attr(0)))
 	
@@ -472,17 +475,52 @@ def main():
 		'whois': WHOIS(arg.target, log_level=arg.log).get(),
 		'loc': LOC(ip, log_level=arg.log).get(),
 		'cms': CMSSCAN(arg.target, log_level=arg.log, intense_scan=arg.intense).scan(),
-		'technologies': Wappa(arg.target, log_level=arg.log).get()
+		#'technologies': Wappa(arg.target, log_level=arg.log).get()
 	}
 
 	if arg.intense:
 		data.update({'subdomains': Subdomains(arg.target, log_level=arg.log).get() })
+
+	print("\n %s[%s+%s] Scan completed\n" % (fg(46), fg(85), fg(46)))
 	
 	if arg.output:
 		with open(arg.output, "w+") as f:
-			json.dump(data, f, ensure_ascii=False, indent=4, default=json_util.default)		
+			json.dump(data, f, ensure_ascii=False, indent=4, default=json_util.default)
+	else:
+		output_print(data)
 	
-	
+
+def output_print(data):
+	if data['ip']:
+		print((" %s%s IP Address %s%s▶ %s{}".format(data['ip'])) %(fg(232), bg(196), bg(0), fg(196), fg(15)))	
+
+	if data['loc']:
+		print(" %s%s Location %s%s▶%s" %(fg(232), bg(202), bg(0), fg(202), fg(15)))
+		for n in data['loc']:
+			print(("    %s%s {} %s %s{}".format(n, data['loc'][n])) %(fg(232), bg(208), bg(0), fg(15)))
+
+	if data['dns']:
+		print(" %s%s DNS %s%s▶%s" %(fg(232), bg(226), bg(0), fg(226), fg(15)))
+		for n in data['dns']:
+			if type(data['dns'][n]):
+				print(("    %s%s {} %s".format(n)) %(fg(232), bg(228), bg(0)))
+				for i in data['dns'][n]:
+					print(("%s%s       {}".format(i)) % (bg(0), fg(15)))
+			else:
+				print(("    %s%s {} %s %s{}".format(n, data['dns'][n])) %(fg(232), bg(209), bg(0), fg(15)))
+
+	if data["cms"]:
+		print((" %s%s CMS %s%s▶ %s{}".format(data['cms']['provider'])) %(fg(232), bg(118), bg(0), fg(118), fg(15)))	
+		if data["cms"]["theme"]:
+			print(("    %s%s theme %s%s {}".format(data["cms"]["theme"])) %(fg(232), bg(120), bg(0), fg(15)))
+		
+		if data["cms"]["results"]:
+			for r in data["cms"]["results"]:
+				print(("    %s%s {} %s%s {}".format(r, data["cms"]["results"][r])) %(fg(232), bg(120), bg(0), fg(15)))
+
+		#TODO: USERS
+		#TODO: PLUGINS
+		
 
 if __name__ == '__main__':
 	try:
