@@ -117,7 +117,8 @@ class CMSSCAN(object):
 			self.results.update({'provider': self.provider})
 			self.pages.update({'readme': self.schema + self.hostname + '/readme.html'})
 
-		self.results.update({'results': self.pages})
+		if len(self.pages) > 0:
+			self.results.update({'results': self.pages})
 
 	def joomlascan(self):
 		if self.log_level > 1:
@@ -148,7 +149,8 @@ class CMSSCAN(object):
 			self.results.update({'provider': self.provider})
 			self.pages.update({'upgrade': self.schema + self.hostname + '/media/com_joomlaupdate/'})
 		
-		self.results.update({'results': self.pages})
+		if len(self.pages) > 0:
+			self.results.update({'results': self.pages})
 
 	def magentoscan(self):
 		if self.log_level > 1:
@@ -197,7 +199,8 @@ class CMSSCAN(object):
 			self.results.update({'provider': self.provider})
 			self.pages.update({'error': self.schema + self.hostname + '/errors/design.xml'})
 
-		self.results.update({'results': self.pages})
+		if len(self.pages) > 0:
+			self.results.update({'results': self.pages})
 
 	def drupalscan(self):
 		try:
@@ -240,7 +243,8 @@ class CMSSCAN(object):
 		except Exception as e:
 			pass
 		
-		self.results.update({'results': self.pages})
+		if len(self.pages) > 0:
+			self.results.update({'results': self.pages})
 
 	def get_users(self):
 		if self.provider == 'Wordpress':
@@ -285,7 +289,9 @@ class CMSSCAN(object):
 						pass
 
 				file.close()
-				self.results.update({'plugins': list})
+
+				if len(list) > 0:
+					self.results.update({'plugins': list})
 			else:
 				raise Exception("wp_plugins.txt file is missing")
 
@@ -326,6 +332,7 @@ class CMSSCAN(object):
 
 			if self.provider is None:
 				self.provider = 'undefined'
+				self.results.update({'provider': self.provider})
 				break		
 
 		self.get_users()
