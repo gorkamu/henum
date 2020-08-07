@@ -465,14 +465,114 @@ def banner():
 def arg_parser():
 	parser = argparse.ArgumentParser(description="Find information about a hostname or ip address")
 	parser.add_argument('-t', '--target', type=str, required=True, action='store', help='target to get info')
-	parser.add_argument('-l', '--log', type=int, required=False, default=0, action='store', help='log level')
-	parser.add_argument('-i', '--intense', default=False, action='store_true', help='intense scan')
+	parser.add_argument('-l', '--log', type=int, required=False, default=0, action='store', help='log level | 1=general response | 2=specific response')	
 	parser.add_argument('-o', '--output', type=str, required=False, action='store', help='path to output the json response')
+	parser.add_argument('-i', '--intense', default=False, action='store_true', help='intense scan')
+	parser.add_argument('-s', '-scan', type=str, required=False, action='store', default='all', help="type of scans to perform [dns|whois|loc|cms|technologies|subdomains] comma separated")
 
 	return parser.parse_args()
 
 def output_print(data):
-	if data.has_key('ip'):		
+	if data.has_key('ip'):
+		print("%s [+] IP: {}".format(data['ip']) % fg(15))
+
+	if data.has_key('loc') and len(data["loc"]) > 0:
+		time.sleep(0.5)
+		print(" [+] Location")
+		for n in data['loc']:
+			time.sleep(0.5)
+			loc_data = data['loc'][n].encode('utf-8')			
+			print("    {}: {}".format(n, loc_data))
+
+	if data.has_key('dns') and len(data["dns"]) > 0:
+		time.sleep(0.5)
+		print(" [+] DNS")
+		for n in data['dns']:
+			if data['dns'].has_key(n):
+				time.sleep(0.5)
+				if len(data["dns"][n]) == 1:
+					dns_data = data["dns"][n][0].encode('utf-8')
+					print("    {} record: {}".format(n, dns_data))
+				else:
+					print("    {} record: ".format(n))
+					for i in data['dns'][n]:
+						print("        {}".format(i))
+
+	if data.has_key("cms") and len(data["cms"]) > 0:
+		time.sleep(0.5)
+		print(" [+] CMS")		
+
+		if data["cms"].has_key("provider"):
+			time.sleep(0.5)
+			print("    provider: {}".format(data["cms"]["provider"]))
+
+		if data["cms"].has_key("theme"):
+			time.sleep(0.5)
+			print("    theme: {}".format(data["cms"]["theme"]))			
+		
+		if data["cms"].has_key("results") and len(data["cms"]["results"]) > 0:
+			for r in data["cms"]["results"]:
+				time.sleep(0.5)
+				results_data = data["cms"]["results"][r].encode('utf-8')				
+				print("    {}: {}".format(r, results_data))
+
+		if data["cms"].has_key("plugins") and len(data["cms"]["plugins"]) > 0:
+			time.sleep(0.5)
+			print("    plugins: ")
+			for plug in data["cms"]["plugins"]:
+				time.sleep(0.5)
+				print("        {}".format(plug))
+
+		if data["cms"].has_key("users") and len(data["cms"]["users"]) > 0:
+			time.sleep(0.5)
+			print("    users: ")
+			for user in data["cms"]["users"]:				
+				for user_prop in user:
+					time.sleep(0.5)
+					user_data =  str(user[user_prop]).encode('utf-8')
+					print("        {}: {}".format(user_prop, user_data))
+
+				if len(data["cms"]["users"]) > 1:
+					print("\n")
+
+	if data.has_key("whois") and len(data["whois"]) > 0:
+		time.sleep(0.5)
+		print(" [+] WHOIS")
+		for w in data["whois"]:
+			time.sleep(0.5)
+			if isinstance(data["whois"][w], list):			
+				print("    {}:".format(w))
+				for wp in data["whois"][w]:
+					time.sleep(0.5)
+					print("        {}".format(wp))
+			else:
+				whois_data = data["whois"][w]
+				if isinstance(whois_data, str) and whois_data.find('%') != -1:
+					whois_data = urllib2.unquote(whois_data)
+					whois_data = whois_data.replace('%u','\\u').decode('unicode_escape')
+					whois_data = whois_data.encode('utf-8')
+								
+				print("    {}: {}".format(w, whois_data))
+
+	if data.has_key("technologies") and len(data["technologies"]) > 0:
+		time.sleep(0.5)
+		print(" [+] Technologies")
+		for tech in data["technologies"]:
+			time.sleep(0.5)
+			if data["technologies"][tech].has_key("version") and data["technologies"][tech]["version"] != "":				
+				print("    {} ~ {}".format(tech, data["technologies"][tech]["version"]))
+			else:
+				print("    {}".format(tech))
+
+	if data.has_key("subdomains") and len(data["subdomains"]) > 0:
+		time.sleep(0.5)
+		print(" [+] Subdomains")
+		for sub in data["subdomains"]:
+			time.sleep(0.5)
+			print("    {}".format(sub))
+
+def output_print2(data):
+	if data.has_key('ip'):
 		print((" %s%s IP Address %s%s▶   %s{}\n".format(data['ip'])) %(fg(232), bg(196), bg(0), fg(196), fg(196)))
 
 	if data.has_key('loc') and len(data["loc"]) > 0:
@@ -584,7 +684,6 @@ def output_print(data):
 					whois_data = whois_data.encode('utf-8')
 								
 				print(("    %s%s {} %s%s {}".format(w, whois_data)) %(fg(232), bg(45), bg(0), fg(45)))		
-
 		
 	if data.has_key("technologies") and len(data["technologies"]) > 0:
 		time.sleep(0.5)
@@ -604,6 +703,43 @@ def output_print(data):
 			time.sleep(0.5)
 			print(("%s%s                   {}".format(sub)) % (bg(0), fg(13)))
 
+def get_data(arg):
+	ip = IP(arg.target, log_level=arg.log).get()
+	if arg.s == 'all':
+		data = { 
+			'ip': ip,
+			'dns': DNS(arg.target, log_level=arg.log).get(),
+			'whois': WHOIS(arg.target, log_level=arg.log).get(),
+			'loc': LOC(ip, log_level=arg.log).get(),
+			'cms': CMSSCAN(arg.target, log_level=arg.log, intense_scan=arg.intense).scan(),
+			'technologies': Wappa(arg.target, log_level=arg.log).get()
+		}
+
+		if arg.intense:
+			data.update({'subdomains': Subdomains(arg.target, log_level=arg.log).get() })
+	else:
+		data = {'ip': ip}
+		for scan in arg.s.split(","):
+			if scan == 'dns':
+				data.update({'dns': DNS(arg.target, log_level=arg.log).get()})
+			elif scan == 'whois':
+				data.update({'whois': WHOIS(arg.target, log_level=arg.log).get()})
+			elif scan == 'loc':
+				data.update({'loc': LOC(ip, log_level=arg.log).get()})
+			elif scan == 'cms':
+				data.update({'cms': CMSSCAN(arg.target, log_level=arg.log, intense_scan=arg.intense).scan()})
+			elif scan == 'technologies':
+				data.update({'technologies': Wappa(arg.target, log_level=arg.log).get()})
+			elif scan == 'subdomains':
+				if arg.intense:
+					data.update({'subdomains': Subdomains(arg.target, log_level=arg.log).get() })
+				else:
+					raise Exception("You have to specify the intense scan option with this scan type")
+			else:
+				continue
+
+	return data
+
 def main():
 	banner()
 	arg = arg_parser()
@@ -614,20 +750,7 @@ def main():
 	if arg.log == 0:
 		print(" %s[%s+%s] Wait until the scan will be complete...%s%s" % (fg(45), fg(46), fg(45), fg(15), bg(0)))
 
-	
-	ip = IP(arg.target, log_level=arg.log).get()
-	
-	data = { 
-		'ip': ip,
-		'dns': DNS(arg.target, log_level=arg.log).get(),
-		'whois': WHOIS(arg.target, log_level=arg.log).get(),
-		'loc': LOC(ip, log_level=arg.log).get(),
-		'cms': CMSSCAN(arg.target, log_level=arg.log, intense_scan=arg.intense).scan(),
-		'technologies': Wappa(arg.target, log_level=arg.log).get()
-	}
-
-	if arg.intense:
-		data.update({'subdomains': Subdomains(arg.target, log_level=arg.log).get() })
+	data = get_data(arg)	
 
 	print("\n %s[%s+%s] Scan completed\n" % (fg(46), fg(85), fg(46)))
 
