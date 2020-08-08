@@ -11,6 +11,7 @@ import whois
 import urllib
 import urllib2
 import time
+import unicodedata
 from os import path, system
 from bson import json_util
 from bs4 import BeautifulSoup
@@ -35,7 +36,7 @@ class IP(object):
 
 	def get(self):
 		if self.log_level != 0:
-			print("	%s[%s+%s] Performing an %sIP Address %sscan" % (fg(45), fg(46), fg(45), fg(15), fg(45)))
+			print(" %s[%s+%s] Performing an %sIP Address %sscan" % (fg(45), fg(46), fg(45), fg(15), fg(45)))
 
 		return self.ip
 
@@ -51,13 +52,13 @@ class DNS(object):
 		results = {}
 		try:
 			if self.log_level != 0:
-				print("	%s[%s+%s] Performing a %sDNS Records %sscan" % (fg(45), fg(46), fg(45), fg(15), fg(45)))
+				print(" %s[%s+%s] Performing a %sDNS Records %sscan" % (fg(45), fg(46), fg(45), fg(15), fg(45)))
 
 			for qtype in 'A', 'AAAA', 'MX', 'NS', 'TXT', 'SOA', 'CNAME', 'MF','MD':
 			    answer = dns.resolver.query(self.hostname, qtype, raise_on_no_answer=False)		    
 			    if answer.rrset is not None:
 			    	if self.log_level > 1:
-						print("		%s| Getting %s{} %sDNS Record".format(qtype) % (fg(43), fg(15), fg(43))	)
+						print("  %s| Getting %s{} %sDNS Record".format(qtype) % (fg(43), fg(15), fg(43))	)
 
 			        results.update({qtype: answer.rrset.to_text().split("\n")})
 
@@ -81,8 +82,8 @@ class CMSSCAN(object):
 
 	def wpscan(self):
 		if self.log_level > 1:
-			print("		%s| Performing a %sWordpress %sscan" % (fg(43), fg(15), fg(43)))
-			print("			%s| Checking for %sWordpress login page" % (fg(158), fg(15)))
+			print("  %s| Performing a %sWordpress %sscan" % (fg(43), fg(15), fg(43)))
+			print("    %s| Checking for %sWordpress login page" % (fg(158), fg(15)))
 
 		wpLoginCheck = requests.get(self.schema + self.hostname + '/wp-login.php', headers=self.user_agent)
 		if wpLoginCheck.status_code == 200 and "user_login" in wpLoginCheck.text and "404" not in wpLoginCheck.text:
@@ -91,7 +92,7 @@ class CMSSCAN(object):
 			self.pages.update({'login': self.schema + self.hostname + '/wp-login.php'})
 
 		if self.log_level > 1:
-			print("			%s| Checking for %sWordpress admin page" % (fg(158), fg(15)))	
+			print("    %s| Checking for %sWordpress admin page" % (fg(158), fg(15)))	
 
 		wpAdminCheck = requests.get(self.schema + self.hostname + '/wp-admin', headers=self.user_agent)
 		if wpAdminCheck.status_code == 200 and "user_login" in wpAdminCheck.text and "404" not in wpLoginCheck.text:
@@ -100,7 +101,7 @@ class CMSSCAN(object):
 			self.pages.update({'admin': self.schema + self.hostname + '/wp-admin'})
 
 		if self.log_level > 1:		
-			print("			%s| Checking for %sWordpress upgrade system" % (fg(158), fg(15)))
+			print("    %s| Checking for %sWordpress upgrade system" % (fg(158), fg(15)))
 
 		wpAdminUpgradeCheck = requests.get(self.schema + self.hostname + '/wp-admin/upgrade.php', headers = self.user_agent)
 		if wpAdminUpgradeCheck.status_code == 200 and "404" not in wpAdminUpgradeCheck.text:
@@ -109,7 +110,7 @@ class CMSSCAN(object):
 			self.pages.update({'upgrade': self.schema + self.hostname + '/wp-admin/upgrade.php'})
 
 		if self.log_level > 1:
-			print("			%s| Checking for %sWordpress readme page" % (fg(158), fg(15)))
+			print("    %s| Checking for %sWordpress readme page" % (fg(158), fg(15)))
 
 		wpAdminReadMeCheck = requests.get(self.schema + self.hostname + '/readme.html', headers=self.user_agent)
 		if wpAdminReadMeCheck.status_code == 200 and "404" not in wpAdminReadMeCheck.text:
@@ -122,8 +123,8 @@ class CMSSCAN(object):
 
 	def joomlascan(self):
 		if self.log_level > 1:
-			print("		%s| Performing a %sJoomla %sscan" % (fg(43), fg(15), fg(43)))
-			print("			%s| Checking for %sJoomla administrator page" % (fg(158), fg(15)))
+			print("  %s| Performing a %sJoomla %sscan" % (fg(43), fg(15), fg(43)))
+			print("    %s| Checking for %sJoomla administrator page" % (fg(158), fg(15)))
 
 		joomlaAdminCheck = requests.get(self.schema + self.hostname + '/administrator/')
 		if joomlaAdminCheck.status_code == 200 and "mod-login-username" in joomlaAdminCheck.text and "404" not in joomlaAdminCheck.text:
@@ -132,7 +133,7 @@ class CMSSCAN(object):
 			self.pages.update({'admin': self.schema + self.hostname + '/administrator/'})
 
 		if self.log_level > 1:
-			print("			%s| Checking for %sJoomla readme file" % (fg(158), fg(15)))
+			print("    %s| Checking for %sJoomla readme file" % (fg(158), fg(15)))
 
 		joomlaReadMeCheck = requests.get(self.schema + self.hostname + '/readme.txt')
 		if joomlaReadMeCheck.status_code == 200 and "joomla" in joomlaReadMeCheck.text and "404" not in joomlaReadMeCheck.text:
@@ -141,7 +142,7 @@ class CMSSCAN(object):
 			self.pages.update({'readme': self.schema + self.hostname + '/readme.txt'})
 
 		if self.log_level > 1:		
-			print("			%s| Checking for %sJoomla update system" % (fg(158), fg(15)))
+			print("    %s| Checking for %sJoomla update system" % (fg(158), fg(15)))
 
 		joomlaDirCheck = requests.get(self.schema + self.hostname + '/media/com_joomlaupdate/')
 		if joomlaDirCheck.status_code == 403 and "404" not in joomlaDirCheck.text:
@@ -154,8 +155,8 @@ class CMSSCAN(object):
 
 	def magentoscan(self):
 		if self.log_level > 1:
-			print("		%s| Performing a %sMagento %sscan" % (fg(43), fg(15), fg(43)))
-			print("			%s| Checking for %sMagento releases notes" % (fg(158), fg(15)))
+			print("  %s| Performing a %sMagento %sscan" % (fg(43), fg(15), fg(43)))
+			print("    %s| Checking for %sMagento releases notes" % (fg(158), fg(15)))
 
 		magentoRelNotesCheck = requests.get(self.schema + self.hostname + '/RELEASE_NOTES.txt')
 		if magentoRelNotesCheck.status_code == 200 and 'magento' in magentoRelNotesCheck.text:
@@ -164,7 +165,7 @@ class CMSSCAN(object):
 			self.pages.update({'release': self.schema + self.hostname + '/RELEASE_NOTES.txt'})
 
 		if self.log_level > 1:		
-			print("			%s| Checking for %sMagento cookies script" % (fg(158), fg(15)))
+			print("    %s| Checking for %sMagento cookies script" % (fg(158), fg(15)))
 
 		magentoCookieCheck = requests.get(self.schema + self.hostname + '/js/mage/cookies.js')
 		if magentoCookieCheck.status_code == 200 and "404" not in magentoCookieCheck.text:
@@ -173,7 +174,7 @@ class CMSSCAN(object):
 			self.pages.update({'cookies': self.schema + self.hostname + '/js/mage/cookies.js'})
 
 		if self.log_level > 1:		
-			print("			%s| Checking for %sMagento index page" % (fg(158), fg(15)))
+			print("    %s| Checking for %sMagento index page" % (fg(158), fg(15)))
 
 		magStringCheck = requests.get(self.schema + self.hostname + '/index.php')
 		if magStringCheck.status_code == 200 and '/mage/' in magStringCheck.text or 'magento' in magStringCheck.text:
@@ -182,7 +183,7 @@ class CMSSCAN(object):
 			self.pages.update({'index': self.schema + self.hostname + '/index.php'})
 
 		if self.log_level > 1:		
-			print("			%s| Checking for %sMagento default styles file" % (fg(158), fg(15)))	
+			print("    %s| Checking for %sMagento default styles file" % (fg(158), fg(15)))	
 
 		magentoStylesCSSCheck = requests.get(self.schema + self.hostname + '/skin/frontend/default/default/css/styles.css')
 		if magentoStylesCSSCheck.status_code == 200 and "404" not in magentoStylesCSSCheck.text:
@@ -191,7 +192,7 @@ class CMSSCAN(object):
 			self.pages.update({'styles': self.schema + self.hostname + '/skin/frontend/default/default/css/styles.css'})
 
 		if self.log_level > 1:		
-			print("			%s| Checking for %sMagento errors design XML file" % (fg(158), fg(15)))	
+			print("    %s| Checking for %sMagento errors design XML file" % (fg(158), fg(15)))	
 		
 		mag404Check = requests.get(self.schema + self.hostname + '/errors/design.xml')
 		if mag404Check.status_code == 200 and "magento" in mag404Check.text:
@@ -205,8 +206,8 @@ class CMSSCAN(object):
 	def drupalscan(self):
 		try:
 			if self.log_level > 1:
-				print("		%s| Performing a %sDrupal %sscan" % (fg(43), fg(15), fg(43)))
-				print("			%s| Checking for %sDrupal readme file" % (fg(158), fg(15)))
+				print("  %s| Performing a %sDrupal %sscan" % (fg(43), fg(15), fg(43)))
+				print("    %s| Checking for %sDrupal readme file" % (fg(158), fg(15)))
 
 			drupalReadMeCheck = requests.get(self.schema + self.hostname + '/readme.txt')
 			if drupalReadMeCheck.status_code == 200 and 'drupal' in drupalReadMeCheck.text and '404' not in drupalReadMeCheck.text:
@@ -215,7 +216,7 @@ class CMSSCAN(object):
 				self.pages.update({'readme': self.schema + self.hostname + '/readme.txt'})
 
 			if self.log_level > 1:		
-				print("			%s| Checking for %sDrupal meta tag" % (fg(158), fg(15)))	
+				print("    %s| Checking for %sDrupal meta tag" % (fg(158), fg(15)))	
 
 			drupalTagCheck = requests.get(self.schema + self.hostname)
 			if drupalTagCheck.status_code == 200 and 'name="Generator" content="Drupal' in drupalTagCheck.text:
@@ -224,7 +225,7 @@ class CMSSCAN(object):
 				self.pages.update({'index': self.schema + self.hostname})
 
 			if self.log_level > 1:
-				print("			%s| Checking for %sDrupal copyright file" % (fg(158), fg(15)))		
+				print("    %s| Checking for %sDrupal copyright file" % (fg(158), fg(15)))		
 
 			drupalCopyrightCheck = requests.get(self.schema + self.hostname + '/core/COPYRIGHT.txt')
 			if drupalCopyrightCheck.status_code == 200 and 'Drupal' in drupalCopyrightCheck.text and '404' not in drupalCopyrightCheck.text:
@@ -233,7 +234,7 @@ class CMSSCAN(object):
 				self.pages.update({'copyright': self.schema + self.hostname + '/core/COPYRIGHT.txt'})
 
 			if self.log_level > 1:
-				print("			%s| Checking for %sDrupal modules readme file" % (fg(158), fg(15)))	
+				print("    %s| Checking for %sDrupal modules readme file" % (fg(158), fg(15)))	
 
 			drupalReadme2Check = requests.get(self.schema + self.hostname + '/modules/README.txt')
 			if drupalReadme2Check.status_code == 200 and 'drupal' in drupalReadme2Check.text and '404' not in drupalReadme2Check.text:
@@ -249,7 +250,7 @@ class CMSSCAN(object):
 	def get_users(self):
 		if self.provider == 'Wordpress':
 			if self.log_level > 1:
-				print("		%s| Getting CMS users" % (fg(43)))
+				print("  %s| Getting CMS users" % (fg(43)))
 				
 			users = []
 			req = urllib.request.Request(self.schema + self.hostname + '/wp-json/wp/v2/users', headers={"User-Agent": "Chrome"})
@@ -272,7 +273,7 @@ class CMSSCAN(object):
 	def get_plugins(self):
 		if self.provider == 'Wordpress':
 			if self.log_level > 1:
-				print("		%s| Getting CMS plugins" % (fg(43)))
+				print("  %s| Getting CMS plugins" % (fg(43)))
 
 			if path.exists("wp_plugins.txt"):
 				file = open("wp_plugins.txt")
@@ -298,7 +299,7 @@ class CMSSCAN(object):
 	def get_theme(self):
 		if self.provider == 'Wordpress':			
 			if self.log_level > 1:
-				print("		%s| Getting CMS theme" % (fg(43)))
+				print("  %s| Getting CMS theme" % (fg(43)))
 
 			req = requests.get(url = self.schema+self.hostname, headers = {'User-Agent': 'Firefox'})
 			soup = BeautifulSoup(req.text, 'html5lib')
@@ -322,7 +323,7 @@ class CMSSCAN(object):
 
 	def scan(self):
 		if self.log_level != 0:
-			print("	%s[%s+%s] Performing a %sCMS %sscan" % (fg(45), fg(46), fg(45), fg(15), fg(45)))
+			print(" %s[%s+%s] Performing a %sCMS %sscan" % (fg(45), fg(46), fg(45), fg(15), fg(45)))
 
 		while self.provider is None:
 			self.wpscan()	
@@ -354,7 +355,7 @@ class WHOIS(object):
 	def get(self):
 		try:
 			if self.log_level != 0:
-				print("	%s[%s+%s] Performing a %sWhois %sscan" % (fg(45), fg(46), fg(45), fg(15), fg(45)))
+				print(" %s[%s+%s] Performing a %sWhois %sscan" % (fg(45), fg(46), fg(45), fg(15), fg(45)))
 
 			results = {}
 			domain = whois.whois(self.hostname)
@@ -379,7 +380,7 @@ class Wappa(object):
 	def get(self):
 		try:
 			if self.log_level != 0:				
-				print("	%s[%s+%s] Performing a %sTechnologies %sscan" % (fg(45), fg(46), fg(45), fg(15), fg(45)))
+				print(" %s[%s+%s] Performing a %sTechnologies %sscan" % (fg(45), fg(46), fg(45), fg(15), fg(45)))
 
 			w = Wappalyzer()
 			return w.analyze(self.schema + self.hostname)
@@ -396,7 +397,7 @@ class LOC(object):
 
 	def get(self):
 		if self.log_level != 0:
-			print("	%s[%s+%s] Performing a %sLocation %sscan" % (fg(45), fg(46), fg(45), fg(15), fg(45)))
+			print(" %s[%s+%s] Performing a %sLocation %sscan" % (fg(45), fg(46), fg(45), fg(15), fg(45)))
 
 		result = {}
 		data = urllib.urlopen("https://ipinfo.io/{}/json".format(self.ip))
@@ -417,7 +418,7 @@ class Subdomains(object):
 
 	def get(self):
 		if self.log_level != 0:
-			print("	%s[%s+%s] Performing a %sSubdomain %sscan" % (fg(45), fg(46), fg(45), fg(15), fg(45)))
+			print(" %s[%s+%s] Performing a %sSubdomain %sscan" % (fg(45), fg(46), fg(45), fg(15), fg(45)))
 				
 		if path.exists("subdomains.txt"):				
 			file = open("subdomains.txt", "r")
@@ -474,234 +475,101 @@ def arg_parser():
 
 def output_print(data):
 	if data.has_key('ip'):
-		print("%s [+] IP: {}".format(data['ip']) % fg(15))
+		print((" %s[%s+%s] IP: %s%s{}".format(data['ip'])) % (fg(45), fg(46), fg(45), bg(0), fg(15)))
 
 	if data.has_key('loc') and len(data["loc"]) > 0:
 		time.sleep(0.5)
-		print(" [+] Location")
+		print(" %s[%s+%s] Location" % (fg(45), fg(46), fg(45)))
 		for n in data['loc']:
 			time.sleep(0.5)
 			loc_data = data['loc'][n].encode('utf-8')			
-			print("    {}: {}".format(n, loc_data))
+			print("  %s| {}: %s{} %s".format(n.capitalize(), loc_data) % (fg(43), fg(15), fg(43)))
 
 	if data.has_key('dns') and len(data["dns"]) > 0:
 		time.sleep(0.5)
-		print(" [+] DNS")
+		print(" %s[%s+%s] DNS" % (fg(45), fg(46), fg(45)))
 		for n in data['dns']:
 			if data['dns'].has_key(n):
 				time.sleep(0.5)
 				if len(data["dns"][n]) == 1:
 					dns_data = data["dns"][n][0].encode('utf-8')
-					print("    {} record: {}".format(n, dns_data))
+					print("  %s| {} record: %s{} %s".format(n.upper(), dns_data) % (fg(43), fg(15), fg(43)))
 				else:
-					print("    {} record: ".format(n))
+					print("  %s+ {} record:".format(n.upper()) % (fg(43)))
 					for i in data['dns'][n]:
-						print("        {}".format(i))
+						print("    %s| {}".format(i) % (fg(15)))
 
 	if data.has_key("cms") and len(data["cms"]) > 0:
 		time.sleep(0.5)
-		print(" [+] CMS")		
+		print(" %s[%s+%s] CMS" % (fg(45), fg(46), fg(45)))
 
 		if data["cms"].has_key("provider"):
 			time.sleep(0.5)
-			print("    provider: {}".format(data["cms"]["provider"]))
+			print("  %s| Provider: %s{} %s".format(data["cms"]["provider"]) % (fg(43), fg(15), fg(43)))
 
 		if data["cms"].has_key("theme"):
 			time.sleep(0.5)
-			print("    theme: {}".format(data["cms"]["theme"]))			
+			print("  %s| Theme: %s{} %s".format(data["cms"]["theme"]) % (fg(43), fg(15), fg(43)))
 		
 		if data["cms"].has_key("results") and len(data["cms"]["results"]) > 0:
 			for r in data["cms"]["results"]:
 				time.sleep(0.5)
 				results_data = data["cms"]["results"][r].encode('utf-8')				
-				print("    {}: {}".format(r, results_data))
+				print("  %s| {}: %s{} %s".format(r.capitalize(), results_data) % (fg(43), fg(15), fg(43)))
 
 		if data["cms"].has_key("plugins") and len(data["cms"]["plugins"]) > 0:
 			time.sleep(0.5)
-			print("    plugins: ")
+			print("  %s+ Plugins: " % (fg(43)))
 			for plug in data["cms"]["plugins"]:
-				time.sleep(0.5)
-				print("        {}".format(plug))
+				time.sleep(0.5)				
+				print("    %s| {}".format(plug) % (fg(15)))
 
 		if data["cms"].has_key("users") and len(data["cms"]["users"]) > 0:
 			time.sleep(0.5)
-			print("    users: ")
-			for user in data["cms"]["users"]:				
+			print("  %s+ Users: " % (fg(43)))
+			for user in data["cms"]["users"]:
+				print("      %s+" % fg(43))
 				for user_prop in user:
 					time.sleep(0.5)
 					user_data =  str(user[user_prop]).encode('utf-8')
-					print("        {}: {}".format(user_prop, user_data))
-
-				if len(data["cms"]["users"]) > 1:
-					print("\n")
+					print("        %s| {}: %s{} %s".format(user_prop, user_data) % (fg(158), fg(15), fg(43)))
 
 	if data.has_key("whois") and len(data["whois"]) > 0:
 		time.sleep(0.5)
-		print(" [+] WHOIS")
+		print(" %s[%s+%s] WHOIS" % (fg(45), fg(46), fg(45)))
 		for w in data["whois"]:
 			time.sleep(0.5)
-			if isinstance(data["whois"][w], list):			
-				print("    {}:".format(w))
+			if isinstance(data["whois"][w], list):
+				print("  %s+ {}".format(w.capitalize()) % (fg(43)))	
 				for wp in data["whois"][w]:
-					time.sleep(0.5)
-					print("        {}".format(wp))
+					time.sleep(0.5)					
+					print("    %s| {}".format(wp) % (fg(15)))	
 			else:
 				whois_data = data["whois"][w]
-				if isinstance(whois_data, str) and whois_data.find('%') != -1:
+				if isinstance(whois_data, unicode):
+					whois_data = unicodedata.normalize('NFKD', whois_data).encode('ascii', 'ignore')
 					whois_data = urllib2.unquote(whois_data)
 					whois_data = whois_data.replace('%u','\\u').decode('unicode_escape')
 					whois_data = whois_data.encode('utf-8')
-								
-				print("    {}: {}".format(w, whois_data))
+												
+				print("  %s| {}: %s{} %s".format(w.capitalize(), whois_data) % (fg(43), fg(15), fg(43)))
 
 	if data.has_key("technologies") and len(data["technologies"]) > 0:
 		time.sleep(0.5)
-		print(" [+] Technologies")
+		print(" %s[%s+%s] Technologies" % (fg(45), fg(46), fg(45)))
 		for tech in data["technologies"]:
 			time.sleep(0.5)
-			if data["technologies"][tech].has_key("version") and data["technologies"][tech]["version"] != "":				
-				print("    {} ~ {}".format(tech, data["technologies"][tech]["version"]))
-			else:
-				print("    {}".format(tech))
-
-	if data.has_key("subdomains") and len(data["subdomains"]) > 0:
-		time.sleep(0.5)
-		print(" [+] Subdomains")
-		for sub in data["subdomains"]:
-			time.sleep(0.5)
-			print("    {}".format(sub))
-
-def output_print2(data):
-	if data.has_key('ip'):
-		print((" %s%s IP Address %s%s▶   %s{}\n".format(data['ip'])) %(fg(232), bg(196), bg(0), fg(196), fg(196)))
-
-	if data.has_key('loc') and len(data["loc"]) > 0:
-		time.sleep(0.5)
-		print(" %s%s Location %s%s▶%s" %(fg(232), bg(202), bg(0), fg(202), fg(15)))
-		for n in data['loc']:
-			loc_data = data['loc'][n]
-			spaces = ""
-			if len(n) < 10:
-				for i in range(0, 10-len(n)):
-					spaces = spaces + " "
-				loc_data = (spaces + data['loc'][n]).encode('utf-8')
-
-			time.sleep(0.5)
-			print(("    %s%s {} %s %s{}".format(n, loc_data)) %(fg(232), bg(208), bg(0), fg(208)))
-
-	if data.has_key('dns') and len(data["dns"]) > 0:
-		time.sleep(0.5)
-		print("\n %s%s DNS %s%s▶%s" %(fg(232), bg(226), bg(0), fg(226), fg(15)))
-		for n in data['dns']:
-			if data['dns'].has_key(n):				
-				if len(data["dns"][n]) == 1:
-					dns_data = data["dns"][n][0]
-					spaces = ""
-					if len(n) < 3:
-						for i in range(0, 3-len(n)):
-							spaces = spaces + " "
-						dns_data = (spaces + data["dns"][n][0]).encode('utf-8')
-
-					time.sleep(0.5)
-					print(("    %s%s {} %s%s {}%s".format(n, dns_data)) %(fg(232), bg(228), bg(0), fg(228), bg(0)))
-				else:
-					time.sleep(0.5)
-					print(("    %s%s {} %s".format(n)) %(fg(232), bg(228), bg(0)))
-					for i in data['dns'][n]:
-						time.sleep(0.5)
-						print(("%s%s          {}".format(i)) % (bg(0), fg(228)))
-
-	if data.has_key("cms") and len(data["cms"]) > 0:
-		time.sleep(0.5)
-		print("\n %s%s CMS %s%s▶ %s" %(fg(232), bg(118), bg(0), fg(118), fg(15)))
-		time.sleep(0.5)
-		print(("    %s%s provider %s%s {}".format(data["cms"]["provider"])) %(fg(232), bg(120), bg(0), fg(120)))
-		if data["cms"].has_key("theme"):
-			time.sleep(0.5)
-			print(("    %s%s theme %s%s    {}".format(data["cms"]["theme"])) %(fg(232), bg(120), bg(0), fg(120)))
-		
-		if data["cms"].has_key("results") and len(data["cms"]["results"]) > 0:
-			for r in data["cms"]["results"]:
-				results_data = data["cms"]["results"][r]
-				spaces = ""
-				if len(r) < 8:
-					for i in range(0, 8-len(r)):
-						spaces = spaces + " "
-					results_data = (spaces + data["cms"]["results"][r]).encode('utf-8')
-
-				time.sleep(0.5)
-				print(("    %s%s {} %s%s {}".format(r, results_data)) %(fg(232), bg(120), bg(0), fg(120)))
-
-		if data["cms"].has_key("plugins") and len(data["cms"]["plugins"]) > 0:
-			time.sleep(0.5)
-			print("    %s%s plugins %s%s" %(fg(232), bg(120), bg(0), fg(15)))
-			for plug in data["cms"]["plugins"]:
-				time.sleep(0.5)
-				print(("%s%s               {}".format(plug)) % (bg(0), fg(120)))
-
-		if data["cms"].has_key("users") and len(data["cms"]["users"]) > 0:
-			time.sleep(0.5)
-			print("    %s%s users %s%s" %(fg(232), bg(120), bg(0), fg(15)))
-			for user in data["cms"]["users"]:				
-				for user_prop in user:
-					user_data = user_prop
-					spaces = ""
-					if len(user) < 5:
-						for i in range(0, 5-len(user_prop)):
-							spaces = spaces + " "
-						user_data = (spaces + str(user[user_prop])).encode('utf-8')
-
-					time.sleep(0.5)
-					print(("       %s%s {} %s%s {}".format(user_prop, user_data)) % (bg(121), fg(232), bg(0), fg(121)))
-
-				if len(data["cms"]["users"]) > 1:
-					print("\n")
-	
-	if data.has_key("whois") and len(data["whois"]) > 0:
-		time.sleep(0.5)
-		print("\n %s%s WHOIS %s%s▶%s" %(fg(232), bg(45), bg(0), fg(45), fg(15)))
-		for w in data["whois"]:
-			if isinstance(data["whois"][w], list):			
-				time.sleep(0.5)	
-				print(("    %s%s {} %s%s".format(w)) %(fg(232), bg(45), bg(0), fg(45)))
-				for wp in data["whois"][w]:
-					time.sleep(0.5)
-					print(("%s%s                   {}".format(wp)) % (bg(0), fg(45)))
-			else:
-				whois_data = data["whois"][w]
-				spaces = ""
-				if len(w) < 12:
-					for i in range(0, 12-len(w)):
-						spaces = spaces + " "
-
-					whois_data = (spaces + data["whois"][w]).encode("utf-8")
-
-				time.sleep(0.5)
-
-				if isinstance(whois_data, str) and whois_data.find('%') != -1:
-					whois_data = urllib2.unquote(whois_data)
-					whois_data = whois_data.replace('%u','\\u').decode('unicode_escape')
-					whois_data = whois_data.encode('utf-8')
-								
-				print(("    %s%s {} %s%s {}".format(w, whois_data)) %(fg(232), bg(45), bg(0), fg(45)))		
-		
-	if data.has_key("technologies") and len(data["technologies"]) > 0:
-		time.sleep(0.5)
-		print("\n %s%s Technologies %s%s▶%s" %(fg(15), bg(21), bg(0), fg(21), fg(15)))
-		for tech in data["technologies"]:
 			if data["technologies"][tech].has_key("version") and data["technologies"][tech]["version"] != "":
-				time.sleep(0.5)
-				print(("%s%s                   {} ~ {}".format(tech, data["technologies"][tech]["version"])) % (bg(0), fg(33)))
+				print("  %s| {} ~ %s{} %s".format(tech, data["technologies"][tech]["version"]) % (fg(43), fg(15), fg(43)))
 			else:
-				time.sleep(0.5)
-				print(("%s%s                   {}".format(tech)) % (bg(0), fg(33)))
-	
+				print("  %s| {}".format(tech) % fg(43))
+
 	if data.has_key("subdomains") and len(data["subdomains"]) > 0:
 		time.sleep(0.5)
-		print("\n %s%s Subdomains %s%s▶%s" %(fg(15), bg(5), bg(0), fg(5), fg(15)))
+		print(" %s[%s+%s] Subdomains" % (fg(45), fg(46), fg(45)))
 		for sub in data["subdomains"]:
 			time.sleep(0.5)
-			print(("%s%s                   {}".format(sub)) % (bg(0), fg(13)))
+			print("  %s| {}".format(sub) % fg(43))
 
 def get_data(arg):
 	ip = IP(arg.target, log_level=arg.log).get()
