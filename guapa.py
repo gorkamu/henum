@@ -274,6 +274,7 @@ class CMSSCAN(object):
 		if self.provider == 'Wordpress':
 			if self.log_level > 1:
 				print("  %s| Getting CMS plugins" % (fg(43)))
+				print("    %s| Searching for plugin vulnerabilities" % fg(158))
 
 			if path.exists("wp_plugins.txt"):
 				file = open("wp_plugins.txt")
@@ -284,8 +285,13 @@ class CMSSCAN(object):
 					try:
 						plug_path = self.schema+self.hostname+"/wp-content/plugins/"+plugin	
 						p = requests.get(url=plug_path)						
-						if 200 == p.status_code or 403 == p.status_code:
-							list.append(plug_path.split("/")[-1])
+						if 200 == p.status_code or 403 == p.status_code:							
+							plugin_name = plug_path.split("/")[-1]
+							vulns = self.get_plugins_cve(plugin_name)							
+							list.append({
+								'name': plugin_name,
+								'vulnerabilities': vulns	
+							})
 					except Exception as e:
 						pass
 
@@ -320,6 +326,47 @@ class CMSSCAN(object):
 
 			if len(default_theme) > 0:
 				self.results.update({'theme': default_theme})
+
+	def get_plugins_cve(self, plugin_name):
+		vulns = []
+		vulnpage = requests.get("https://wpvulndb.com/search?text={}&vuln_type=".format(plugin_name), headers=self.user_agent)
+		if vulnpage.status_code == 200:
+			soup = BeautifulSoup(vulnpage.content, 'html.parser')
+			soup = soup.find(id='search-results').find('table').find('tbody').find_all('tr')
+
+			for row in soup:
+				vuln = {}
+				cols = row.find_all('td')
+				cols = [ele.text.strip() for ele in cols]
+				vuln_url = "https://wpvulndb.com/vulnerabilities/{}".format(cols[0])
+				vuln_name = cols[2].strip()
+				vuln_info = requests.get(vuln_url, headers=self.user_agent)
+								
+				if vuln_info.status_code == 200:
+					vuln_site = BeautifulSoup(vuln_info.content, 'html.parser')
+					vuln_fixed = vuln_site.findAll("div", {"class": "fixed-in"})
+					if len(vuln_fixed) > 0:
+						vuln_fixed = vuln_fixed[0].text
+						if "fixed in version" in vuln_fixed:
+							vuln_fixed = vuln_fixed[17:len(vuln_fixed)].strip()
+
+					vuln_tables = vuln_site.findAll('table')					
+					if len(vuln_tables) > 0:
+						vuln = {
+							'name': vuln_name,
+							'type': vuln_tables[2].find_all('tr')[0].find_all('td')[1].text.strip(),
+							'fixed_in': vuln_fixed,
+							'cve': vuln_tables[1].find_all('tr')[0].find_all('td')[1].text.strip(),
+							'cve_link': vuln_tables[1].find_all('tr')[0].find_all('td')[1].find('a').get('href').strip(),
+							'cwe': vuln_tables[2].find_all('tr')[2].find_all('td')[1].text.strip(),
+							'cwe_link': vuln_tables[2].find_all('tr')[2].find_all('td')[1].find('a').get('href').strip()
+						}
+
+						vulns.append(vuln)
+
+		return vulns
+
+
 
 	def scan(self):
 		if self.log_level != 0:
@@ -520,9 +567,15 @@ def output_print(data):
 		if data["cms"].has_key("plugins") and len(data["cms"]["plugins"]) > 0:
 			time.sleep(0.5)
 			print("  %s+ Plugins: " % (fg(43)))
-			for plug in data["cms"]["plugins"]:
-				time.sleep(0.5)				
-				print("    %s| {}".format(plug) % (fg(15)))
+			for plug in data["cms"]["plugins"]:				
+				time.sleep(0.5)		
+				print("    %s + {}".format(plug["name"]) % (fg(15)))
+				if len(plug["vulnerabilities"]) > 0:
+					for vuln in plug["vulnerabilities"]:
+						time.sleep(0.5)
+						for prop in vuln:
+							print("          %s| {}: %s{} %s".format(prop, vuln[prop]) % (fg(158), fg(15), fg(43)))
+						print(" ")
 
 		if data["cms"].has_key("users") and len(data["cms"]["users"]) > 0:
 			time.sleep(0.5)
@@ -532,7 +585,7 @@ def output_print(data):
 				for user_prop in user:
 					time.sleep(0.5)
 					user_data =  str(user[user_prop]).encode('utf-8')
-					print("        %s| {}: %s{} %s".format(user_prop, user_data) % (fg(158), fg(15), fg(43)))
+					print("          %s| {}: %s{} %s".format(user_prop, user_data) % (fg(158), fg(15), fg(43)))
 
 	if data.has_key("whois") and len(data["whois"]) > 0:
 		time.sleep(0.5)
