@@ -270,7 +270,7 @@ class CMSSCAN(object):
 			if len(users) > 0:
 				self.results.update({'users': users})
 	
-	def get_plugins(self):
+	def get_plugins_intense(self):
 		if self.provider == 'Wordpress':
 			if self.log_level > 1:
 				print("  %s| Getting CMS plugins" % (fg(43)))
@@ -287,7 +287,7 @@ class CMSSCAN(object):
 						p = requests.get(url=plug_path)						
 						if 200 == p.status_code or 403 == p.status_code:							
 							plugin_name = plug_path.split("/")[-1]
-							vulns = self.get_plugins_cve(plugin_name)							
+							vulns = self.get_plugins_cve(plugin_name)
 							list.append({
 								'name': plugin_name,
 								'vulnerabilities': vulns	
@@ -302,6 +302,59 @@ class CMSSCAN(object):
 			else:
 				raise Exception("wp_plugins.txt file is missing")
 
+	def get_plugins_simple(self):
+		if self.provider == 'Wordpress':
+			if self.log_level > 1:
+				print("  %s| Getting CMS plugins" % (fg(43)))
+				print("    %s| Searching for plugin vulnerabilities" % fg(158))
+
+			headers = {
+			    'authority': 'wpdetector.com',
+			    'accept': '*/*',
+			    'x-requested-with': 'XMLHttpRequest',
+			    'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36',
+			    'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
+			    'origin': 'https://wpdetector.com',
+			    'sec-fetch-site': 'same-origin',
+			    'sec-fetch-mode': 'cors',
+			    'sec-fetch-dest': 'empty',
+			    'referer': 'https://wpdetector.com/es/',
+			    'accept-language': 'es-ES,es;q=0.9,en;q=0.8,gl;q=0.7,nl;q=0.6,pt;q=0.5,la;q=0.4',
+			}
+
+			data = {
+			  'action': 'set_form',
+			  'name': self.schema + self.hostname
+			}
+
+			try:
+				list = []
+				response = requests.post('https://wpdetector.com/wp-admin/admin-ajax.php', headers=headers, data=data)
+				if 200 == response.status_code:
+					soup = BeautifulSoup(response.content, 'html.parser')
+					links = soup.find_all('a', {'class': 'download_btn'})
+					for l in links:
+						plugin_link = l.get('href')
+						if "affiliates/ref.php?id=" not in plugin_link:
+							plugin_name = plugin_link.split("/")
+							plugin_name = plugin_name[len(plugin_name)-1]
+							vulns = self.get_plugins_cve(plugin_name)
+							if len(vulns) > 0:
+								list.append({
+									'name': plugin_name,
+									'vulnerabilities': vulns	
+								})
+							else:
+								list.append({
+									'name': plugin_name
+								})
+
+					if len(list) > 0:
+						self.results.update({'plugins': list})
+
+			except Exception as e:
+				print(e)
+			
 	def get_theme(self):
 		if self.provider == 'Wordpress':			
 			if self.log_level > 1:
@@ -329,8 +382,8 @@ class CMSSCAN(object):
 
 	def get_plugins_cve(self, plugin_name):
 		vulns = []
-		vulnpage = requests.get("https://wpvulndb.com/search?text={}&vuln_type=".format(plugin_name), headers=self.user_agent)
-		if vulnpage.status_code == 200:
+		vulnpage = requests.get("https://wpvulndb.com/search?text={}&vuln_type=".format(plugin_name), headers=self.user_agent)		
+		if vulnpage.status_code == 200 and "No results found." not in vulnpage.text:
 			soup = BeautifulSoup(vulnpage.content, 'html.parser')
 			soup = soup.find(id='search-results').find('table').find('tbody').find_all('tr')
 
@@ -338,35 +391,49 @@ class CMSSCAN(object):
 				vuln = {}
 				cols = row.find_all('td')
 				cols = [ele.text.strip() for ele in cols]
-				vuln_url = "https://wpvulndb.com/vulnerabilities/{}".format(cols[0])
+				vuln_url = "https://wpvulndb.com/vulnerabilities/{}".format(cols[0])				
 				vuln_name = cols[2].strip()
-				vuln_info = requests.get(vuln_url, headers=self.user_agent)
-								
+				vuln_info = requests.get(vuln_url, headers=self.user_agent)				
+				
 				if vuln_info.status_code == 200:
 					vuln_site = BeautifulSoup(vuln_info.content, 'html.parser')
-					vuln_fixed = vuln_site.findAll("div", {"class": "fixed-in"})
+					vuln_fixed = vuln_site.findAll("div", {"class": "fixed-in"})				
 					if len(vuln_fixed) > 0:
 						vuln_fixed = vuln_fixed[0].text
 						if "fixed in version" in vuln_fixed:
 							vuln_fixed = vuln_fixed[17:len(vuln_fixed)].strip()
 
-					vuln_tables = vuln_site.findAll('table')					
-					if len(vuln_tables) > 0:
-						vuln = {
-							'name': vuln_name,
-							'type': vuln_tables[2].find_all('tr')[0].find_all('td')[1].text.strip(),
-							'fixed_in': vuln_fixed,
-							'cve': vuln_tables[1].find_all('tr')[0].find_all('td')[1].text.strip(),
-							'cve_link': vuln_tables[1].find_all('tr')[0].find_all('td')[1].find('a').get('href').strip(),
-							'cwe': vuln_tables[2].find_all('tr')[2].find_all('td')[1].text.strip(),
-							'cwe_link': vuln_tables[2].find_all('tr')[2].find_all('td')[1].find('a').get('href').strip()
-						}
+					vuln = {
+						'name': vuln_name,
+						'fixed_in': vuln_fixed
+					}
 
-						vulns.append(vuln)
+					for link in vuln_site.findAll('a', attrs={'href': re.compile("^https://")}):
+						if "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE" in link.get('href'):
+							cve_link = link.get('href')
+							cve_no = cve_link[51:len(cve_link)]
+							vuln.update({'cve_link': cve_link})
+							vuln.update({'cve': cve_no})
+			    		
+						if "https://www.exploit-db.com" in link.get('href'):
+							exploit_link = link.get('href')
+							exploit_no = exploit_link.split("/")[-2]							
+							vuln.update({'exploit_link': exploit_link})
+							vuln.update({'exploit': exploit_no})
+
+						if "https://cwe.mitre.org/data/definitions" in link.get('href'):
+							cwe_link = link.get('href')
+							cwe = cwe_link[39:len(cwe_link)-5]
+							vuln.update({'cwe_link': cwe_link})
+							vuln.update({'cwe': cwe})
+
+					vuln_type = vuln_site.findAll("td", string="Type")[0].findNext("td")
+					if vuln_type is not None:
+						vuln.update({'type': vuln_type.text})					
+						
+					vulns.append(vuln)
 
 		return vulns
-
-
 
 	def scan(self):
 		if self.log_level != 0:
@@ -387,7 +454,9 @@ class CMSSCAN(object):
 		self.get_theme()
 
 		if self.intense_scan:
-			self.get_plugins()
+			self.get_plugins_intense()
+		else:
+			self.get_plugins_simple()
 
 		return self.results
 
@@ -486,7 +555,6 @@ class Subdomains(object):
 			raise Exception("subdomains.txt file is missing")
 
 
-
 def banner():
 	light = 175
 	dark = 197
@@ -570,7 +638,7 @@ def output_print(data):
 			for plug in data["cms"]["plugins"]:				
 				time.sleep(0.5)		
 				print("    %s + {}".format(plug["name"]) % (fg(15)))
-				if len(plug["vulnerabilities"]) > 0:
+				if plug.has_key("vulnerabilities") and len(plug["vulnerabilities"]) > 0:
 					for vuln in plug["vulnerabilities"]:
 						time.sleep(0.5)
 						for prop in vuln:
