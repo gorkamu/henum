@@ -81,171 +81,187 @@ class CMSSCAN(object):
 			raise Exception("that's not a valid hostname")
 
 	def wpscan(self):
-		if self.log_level > 1:
-			print("  %s| Performing a %sWordpress %sscan" % (fg(43), fg(15), fg(43)))
-			print("    %s| Checking for %sWordpress login page" % (fg(158), fg(15)))
+		if self.provider is None:
+			try:			
+				if self.log_level > 1:
+					print("  %s| Performing a %sWordpress %sscan" % (fg(43), fg(15), fg(43)))
+					print("    %s| Checking for %sWordpress login page" % (fg(158), fg(15)))
 
-		wpLoginCheck = requests.get(self.schema + self.hostname + '/wp-login.php', headers=self.user_agent)
-		if wpLoginCheck.status_code == 200 and "user_login" in wpLoginCheck.text and "404" not in wpLoginCheck.text:
-			self.provider = 'Wordpress'
-			self.results.update({'provider': self.provider})
-			self.pages.update({'login': self.schema + self.hostname + '/wp-login.php'})
+				wpLoginCheck = requests.get(self.schema + self.hostname + '/wp-login.php', headers=self.user_agent)
+				if wpLoginCheck.status_code == 200 and "user_login" in wpLoginCheck.text and "404" not in wpLoginCheck.text:
+					self.provider = 'Wordpress'
+					self.results.update({'provider': self.provider})
+					self.pages.update({'login': self.schema + self.hostname + '/wp-login.php'})
 
-		if self.log_level > 1:
-			print("    %s| Checking for %sWordpress admin page" % (fg(158), fg(15)))	
+				if self.log_level > 1:
+					print("    %s| Checking for %sWordpress admin page" % (fg(158), fg(15)))	
 
-		wpAdminCheck = requests.get(self.schema + self.hostname + '/wp-admin', headers=self.user_agent)
-		if wpAdminCheck.status_code == 200 and "user_login" in wpAdminCheck.text and "404" not in wpLoginCheck.text:
-			self.provider = 'Wordpress'
-			self.results.update({'provider': self.provider})
-			self.pages.update({'admin': self.schema + self.hostname + '/wp-admin'})
+				wpAdminCheck = requests.get(self.schema + self.hostname + '/wp-admin', headers=self.user_agent)
+				if wpAdminCheck.status_code == 200 and "user_login" in wpAdminCheck.text and "404" not in wpLoginCheck.text:
+					self.provider = 'Wordpress'
+					self.results.update({'provider': self.provider})
+					self.pages.update({'admin': self.schema + self.hostname + '/wp-admin'})
 
-		if self.log_level > 1:		
-			print("    %s| Checking for %sWordpress upgrade system" % (fg(158), fg(15)))
+				if self.log_level > 1:		
+					print("    %s| Checking for %sWordpress upgrade system" % (fg(158), fg(15)))
 
-		wpAdminUpgradeCheck = requests.get(self.schema + self.hostname + '/wp-admin/upgrade.php', headers = self.user_agent)
-		if wpAdminUpgradeCheck.status_code == 200 and "404" not in wpAdminUpgradeCheck.text:
-			self.provider = 'Wordpress'
-			self.results.update({'provider': self.provider})
-			self.pages.update({'upgrade': self.schema + self.hostname + '/wp-admin/upgrade.php'})
+				wpAdminUpgradeCheck = requests.get(self.schema + self.hostname + '/wp-admin/upgrade.php', headers = self.user_agent)
+				if wpAdminUpgradeCheck.status_code == 200 and "404" not in wpAdminUpgradeCheck.text:
+					self.provider = 'Wordpress'
+					self.results.update({'provider': self.provider})
+					self.pages.update({'upgrade': self.schema + self.hostname + '/wp-admin/upgrade.php'})
 
-		if self.log_level > 1:
-			print("    %s| Checking for %sWordpress readme page" % (fg(158), fg(15)))
+				if self.log_level > 1:
+					print("    %s| Checking for %sWordpress readme page" % (fg(158), fg(15)))
 
-		wpAdminReadMeCheck = requests.get(self.schema + self.hostname + '/readme.html', headers=self.user_agent)
-		if wpAdminReadMeCheck.status_code == 200 and "404" not in wpAdminReadMeCheck.text:
-			self.provider = 'Wordpress'
-			self.results.update({'provider': self.provider})
-			self.pages.update({'readme': self.schema + self.hostname + '/readme.html'})
+				wpAdminReadMeCheck = requests.get(self.schema + self.hostname + '/readme.html', headers=self.user_agent)
+				if wpAdminReadMeCheck.status_code == 200 and "404" not in wpAdminReadMeCheck.text:
+					self.provider = 'Wordpress'
+					self.results.update({'provider': self.provider})
+					self.pages.update({'readme': self.schema + self.hostname + '/readme.html'})
 
-		if len(self.pages) > 0:
-			self.results.update({'results': self.pages})
+				if len(self.pages) > 0:
+					self.results.update({'results': self.pages})
+			
+			except Exception as e:
+				pass
 
 	def joomlascan(self):
-		if self.log_level > 1:
-			print("  %s| Performing a %sJoomla %sscan" % (fg(43), fg(15), fg(43)))
-			print("    %s| Checking for %sJoomla administrator page" % (fg(158), fg(15)))
+		if self.provider is None:
+			try:			
+				if self.log_level > 1:
+					print("  %s| Performing a %sJoomla %sscan" % (fg(43), fg(15), fg(43)))
+					print("    %s| Checking for %sJoomla administrator page" % (fg(158), fg(15)))
 
-		joomlaAdminCheck = requests.get(self.schema + self.hostname + '/administrator/')
-		if joomlaAdminCheck.status_code == 200 and "mod-login-username" in joomlaAdminCheck.text and "404" not in joomlaAdminCheck.text:
-			self.provider = 'Joomla'
-			self.results.update({'provider': self.provider})
-			self.pages.update({'admin': self.schema + self.hostname + '/administrator/'})
+				joomlaAdminCheck = requests.get(self.schema + self.hostname + '/administrator/')
+				if joomlaAdminCheck.status_code == 200 and "mod-login-username" in joomlaAdminCheck.text and "404" not in joomlaAdminCheck.text:
+					self.provider = 'Joomla'
+					self.results.update({'provider': self.provider})
+					self.pages.update({'admin': self.schema + self.hostname + '/administrator/'})
 
-		if self.log_level > 1:
-			print("    %s| Checking for %sJoomla readme file" % (fg(158), fg(15)))
+				if self.log_level > 1:
+					print("    %s| Checking for %sJoomla readme file" % (fg(158), fg(15)))
 
-		joomlaReadMeCheck = requests.get(self.schema + self.hostname + '/readme.txt')
-		if joomlaReadMeCheck.status_code == 200 and "joomla" in joomlaReadMeCheck.text and "404" not in joomlaReadMeCheck.text:
-			self.provider = 'Joomla'
-			self.results.update({'provider': self.provider})
-			self.pages.update({'readme': self.schema + self.hostname + '/readme.txt'})
+				joomlaReadMeCheck = requests.get(self.schema + self.hostname + '/readme.txt')
+				if joomlaReadMeCheck.status_code == 200 and "joomla" in joomlaReadMeCheck.text and "404" not in joomlaReadMeCheck.text:
+					self.provider = 'Joomla'
+					self.results.update({'provider': self.provider})
+					self.pages.update({'readme': self.schema + self.hostname + '/readme.txt'})
 
-		if self.log_level > 1:		
-			print("    %s| Checking for %sJoomla update system" % (fg(158), fg(15)))
+				if self.log_level > 1:		
+					print("    %s| Checking for %sJoomla update system" % (fg(158), fg(15)))
 
-		joomlaDirCheck = requests.get(self.schema + self.hostname + '/media/com_joomlaupdate/')
-		if joomlaDirCheck.status_code == 403 and "404" not in joomlaDirCheck.text:
-			self.provider = 'Joomla'
-			self.results.update({'provider': self.provider})
-			self.pages.update({'upgrade': self.schema + self.hostname + '/media/com_joomlaupdate/'})
-		
-		if len(self.pages) > 0:
-			self.results.update({'results': self.pages})
+				joomlaDirCheck = requests.get(self.schema + self.hostname + '/media/com_joomlaupdate/')
+				if joomlaDirCheck.status_code == 403 and "404" not in joomlaDirCheck.text:
+					self.provider = 'Joomla'
+					self.results.update({'provider': self.provider})
+					self.pages.update({'upgrade': self.schema + self.hostname + '/media/com_joomlaupdate/'})
+				
+				if len(self.pages) > 0:
+					self.results.update({'results': self.pages})
+
+			except Exception as e:
+				pass
 
 	def magentoscan(self):
-		if self.log_level > 1:
-			print("  %s| Performing a %sMagento %sscan" % (fg(43), fg(15), fg(43)))
-			print("    %s| Checking for %sMagento releases notes" % (fg(158), fg(15)))
+		if self.provider is None:
+			try:
+				if self.log_level > 1:
+					print("  %s| Performing a %sMagento %sscan" % (fg(43), fg(15), fg(43)))
+					print("    %s| Checking for %sMagento releases notes" % (fg(158), fg(15)))
 
-		magentoRelNotesCheck = requests.get(self.schema + self.hostname + '/RELEASE_NOTES.txt')
-		if magentoRelNotesCheck.status_code == 200 and 'magento' in magentoRelNotesCheck.text:
-			self.provider = 'Magento'
-			self.results.update({'provider': self.provider})
-			self.pages.update({'release': self.schema + self.hostname + '/RELEASE_NOTES.txt'})
+				magentoRelNotesCheck = requests.get(self.schema + self.hostname + '/RELEASE_NOTES.txt')
+				if magentoRelNotesCheck.status_code == 200 and 'magento' in magentoRelNotesCheck.text:
+					self.provider = 'Magento'
+					self.results.update({'provider': self.provider})
+					self.pages.update({'release': self.schema + self.hostname + '/RELEASE_NOTES.txt'})
 
-		if self.log_level > 1:		
-			print("    %s| Checking for %sMagento cookies script" % (fg(158), fg(15)))
+				if self.log_level > 1:		
+					print("    %s| Checking for %sMagento cookies script" % (fg(158), fg(15)))
 
-		magentoCookieCheck = requests.get(self.schema + self.hostname + '/js/mage/cookies.js')
-		if magentoCookieCheck.status_code == 200 and "404" not in magentoCookieCheck.text:
-			self.provider = 'Magento'
-			self.results.update({'provider': self.provider})
-			self.pages.update({'cookies': self.schema + self.hostname + '/js/mage/cookies.js'})
+				magentoCookieCheck = requests.get(self.schema + self.hostname + '/js/mage/cookies.js')
+				if magentoCookieCheck.status_code == 200 and "404" not in magentoCookieCheck.text:
+					self.provider = 'Magento'
+					self.results.update({'provider': self.provider})
+					self.pages.update({'cookies': self.schema + self.hostname + '/js/mage/cookies.js'})
 
-		if self.log_level > 1:		
-			print("    %s| Checking for %sMagento index page" % (fg(158), fg(15)))
+				if self.log_level > 1:		
+					print("    %s| Checking for %sMagento index page" % (fg(158), fg(15)))
 
-		magStringCheck = requests.get(self.schema + self.hostname + '/index.php')
-		if magStringCheck.status_code == 200 and '/mage/' in magStringCheck.text or 'magento' in magStringCheck.text:
-			self.provider = 'Magento'
-			self.results.update({'provider': self.provider})
-			self.pages.update({'index': self.schema + self.hostname + '/index.php'})
+				magStringCheck = requests.get(self.schema + self.hostname + '/index.php')
+				if magStringCheck.status_code == 200 and '/mage/' in magStringCheck.text or 'magento' in magStringCheck.text:
+					self.provider = 'Magento'
+					self.results.update({'provider': self.provider})
+					self.pages.update({'index': self.schema + self.hostname + '/index.php'})
 
-		if self.log_level > 1:		
-			print("    %s| Checking for %sMagento default styles file" % (fg(158), fg(15)))	
+				if self.log_level > 1:		
+					print("    %s| Checking for %sMagento default styles file" % (fg(158), fg(15)))	
 
-		magentoStylesCSSCheck = requests.get(self.schema + self.hostname + '/skin/frontend/default/default/css/styles.css')
-		if magentoStylesCSSCheck.status_code == 200 and "404" not in magentoStylesCSSCheck.text:
-			self.provider = 'Magento'
-			self.results.update({'provider': self.provider})
-			self.pages.update({'styles': self.schema + self.hostname + '/skin/frontend/default/default/css/styles.css'})
+				magentoStylesCSSCheck = requests.get(self.schema + self.hostname + '/skin/frontend/default/default/css/styles.css')
+				if magentoStylesCSSCheck.status_code == 200 and "404" not in magentoStylesCSSCheck.text:
+					self.provider = 'Magento'
+					self.results.update({'provider': self.provider})
+					self.pages.update({'styles': self.schema + self.hostname + '/skin/frontend/default/default/css/styles.css'})
 
-		if self.log_level > 1:		
-			print("    %s| Checking for %sMagento errors design XML file" % (fg(158), fg(15)))	
-		
-		mag404Check = requests.get(self.schema + self.hostname + '/errors/design.xml')
-		if mag404Check.status_code == 200 and "magento" in mag404Check.text:
-			self.provider = 'Magento'
-			self.results.update({'provider': self.provider})
-			self.pages.update({'error': self.schema + self.hostname + '/errors/design.xml'})
+				if self.log_level > 1:		
+					print("    %s| Checking for %sMagento errors design XML file" % (fg(158), fg(15)))	
+				
+				mag404Check = requests.get(self.schema + self.hostname + '/errors/design.xml')
+				if mag404Check.status_code == 200 and "magento" in mag404Check.text:
+					self.provider = 'Magento'
+					self.results.update({'provider': self.provider})
+					self.pages.update({'error': self.schema + self.hostname + '/errors/design.xml'})
 
-		if len(self.pages) > 0:
-			self.results.update({'results': self.pages})
+				if len(self.pages) > 0:
+					self.results.update({'results': self.pages})
+
+			except Exception as e:
+				pass
 
 	def drupalscan(self):
-		try:
-			if self.log_level > 1:
-				print("  %s| Performing a %sDrupal %sscan" % (fg(43), fg(15), fg(43)))
-				print("    %s| Checking for %sDrupal readme file" % (fg(158), fg(15)))
+		if self.provider is None:
+			try:
+				if self.log_level > 1:
+					print("  %s| Performing a %sDrupal %sscan" % (fg(43), fg(15), fg(43)))
+					print("    %s| Checking for %sDrupal readme file" % (fg(158), fg(15)))
 
-			drupalReadMeCheck = requests.get(self.schema + self.hostname + '/readme.txt')
-			if drupalReadMeCheck.status_code == 200 and 'drupal' in drupalReadMeCheck.text and '404' not in drupalReadMeCheck.text:
-				self.provider = 'Drupal'
-				self.results.update({'provider': self.provider})
-				self.pages.update({'readme': self.schema + self.hostname + '/readme.txt'})
+				drupalReadMeCheck = requests.get(self.schema + self.hostname + '/readme.txt')
+				if drupalReadMeCheck.status_code == 200 and 'drupal' in drupalReadMeCheck.text and '404' not in drupalReadMeCheck.text:
+					self.provider = 'Drupal'
+					self.results.update({'provider': self.provider})
+					self.pages.update({'readme': self.schema + self.hostname + '/readme.txt'})
 
-			if self.log_level > 1:		
-				print("    %s| Checking for %sDrupal meta tag" % (fg(158), fg(15)))	
+				if self.log_level > 1:		
+					print("    %s| Checking for %sDrupal meta tag" % (fg(158), fg(15)))	
 
-			drupalTagCheck = requests.get(self.schema + self.hostname)
-			if drupalTagCheck.status_code == 200 and 'name="Generator" content="Drupal' in drupalTagCheck.text:
-				self.provider = 'Drupal'
-				self.results.update({'provider': self.provider})
-				self.pages.update({'index': self.schema + self.hostname})
+				drupalTagCheck = requests.get(self.schema + self.hostname)
+				if drupalTagCheck.status_code == 200 and 'name="Generator" content="Drupal' in drupalTagCheck.text:
+					self.provider = 'Drupal'
+					self.results.update({'provider': self.provider})
+					self.pages.update({'index': self.schema + self.hostname})
 
-			if self.log_level > 1:
-				print("    %s| Checking for %sDrupal copyright file" % (fg(158), fg(15)))		
+				if self.log_level > 1:
+					print("    %s| Checking for %sDrupal copyright file" % (fg(158), fg(15)))		
 
-			drupalCopyrightCheck = requests.get(self.schema + self.hostname + '/core/COPYRIGHT.txt')
-			if drupalCopyrightCheck.status_code == 200 and 'Drupal' in drupalCopyrightCheck.text and '404' not in drupalCopyrightCheck.text:
-				self.provider = 'Drupal'
-				self.results.update({'provider': self.provider})
-				self.pages.update({'copyright': self.schema + self.hostname + '/core/COPYRIGHT.txt'})
+				drupalCopyrightCheck = requests.get(self.schema + self.hostname + '/core/COPYRIGHT.txt')
+				if drupalCopyrightCheck.status_code == 200 and 'Drupal' in drupalCopyrightCheck.text and '404' not in drupalCopyrightCheck.text:
+					self.provider = 'Drupal'
+					self.results.update({'provider': self.provider})
+					self.pages.update({'copyright': self.schema + self.hostname + '/core/COPYRIGHT.txt'})
 
-			if self.log_level > 1:
-				print("    %s| Checking for %sDrupal modules readme file" % (fg(158), fg(15)))	
+				if self.log_level > 1:
+					print("    %s| Checking for %sDrupal modules readme file" % (fg(158), fg(15)))	
 
-			drupalReadme2Check = requests.get(self.schema + self.hostname + '/modules/README.txt')
-			if drupalReadme2Check.status_code == 200 and 'drupal' in drupalReadme2Check.text and '404' not in drupalReadme2Check.text:
-				self.provider = 'Drupal'
-				self.results.update({'provider': self.provider})
-				self.pages.update({'modules': self.schema + self.hostname + '/modules/README.txt'})
-		except Exception as e:
-			pass
-		
-		if len(self.pages) > 0:
-			self.results.update({'results': self.pages})
+				drupalReadme2Check = requests.get(self.schema + self.hostname + '/modules/README.txt')
+				if drupalReadme2Check.status_code == 200 and 'drupal' in drupalReadme2Check.text and '404' not in drupalReadme2Check.text:
+					self.provider = 'Drupal'
+					self.results.update({'provider': self.provider})
+					self.pages.update({'modules': self.schema + self.hostname + '/modules/README.txt'})
+			except Exception as e:
+				pass
+			
+			if len(self.pages) > 0:
+				self.results.update({'results': self.pages})
 
 	def get_users(self):
 		if self.provider == 'Wordpress':
@@ -253,10 +269,9 @@ class CMSSCAN(object):
 				print("  %s| Getting CMS users" % (fg(43)))
 				
 			users = []
-			req = urllib.request.Request(self.schema + self.hostname + '/wp-json/wp/v2/users', headers={"User-Agent": "Chrome"})
-			url = urllib.request.urlopen(req)
-
-			try:
+			try:			
+				req = urllib.request.Request(self.schema + self.hostname + '/wp-json/wp/v2/users', headers=self.user_agent)
+				url = urllib.request.urlopen(req)			
 				for n in json.loads(url.read()):
 					users.append({
 						'id': n['id'],
@@ -264,7 +279,9 @@ class CMSSCAN(object):
 						'slug': n['slug'],
 						'link': n['link']
 					})	
-			except Exception as e:
+			except urllib.error.HTTPError as e:
+				pass
+			except Exception as ex:
 				pass
 			
 			if len(users) > 0:
@@ -335,7 +352,7 @@ class CMSSCAN(object):
 					links = soup.find_all('a', {'class': 'download_btn'})
 					for l in links:
 						plugin_link = l.get('href')
-						if "affiliates/ref.php?id=" not in plugin_link:
+						if "affiliates/ref.php?id=" not in plugin_link and "?ref=" not in plugin_link:
 							plugin_name = plugin_link.split("/")
 							plugin_name = plugin_name[len(plugin_name)-1]
 							vulns = self.get_plugins_cve(plugin_name)
@@ -441,14 +458,14 @@ class CMSSCAN(object):
 
 		while self.provider is None:
 			self.wpscan()	
-			self.joomlascan()
+			self.joomlascan()			
 			self.magentoscan()
 			self.drupalscan()
 
 			if self.provider is None:
 				self.provider = 'undefined'
 				self.results.update({'provider': self.provider})
-				break		
+				break
 
 		self.get_users()
 		self.get_theme()
