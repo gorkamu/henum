@@ -651,8 +651,7 @@ def output_print(data):
 			for user in data["cms"]["users"]:
 				print("      %s+" % fg(43))
 				for user_prop in user:
-					time.sleep(0.5)
-					user_data =  str(user[user_prop]).encode('utf-8')
+					user_data =  unicode(user[user_prop]).encode('utf8')
 					print("          %s| {}: %s{} %s".format(user_prop, user_data) % (fg(158), fg(15), fg(43)))
 
 	if data.has_key("whois") and len(data["whois"]) > 0:
