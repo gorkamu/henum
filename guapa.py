@@ -397,6 +397,21 @@ class CMSSCAN(object):
 			if len(default_theme) > 0:
 				self.results.update({'theme': default_theme})
 
+	def get_version(self):
+		if self.log_level > 1:
+			print("  %s| Getting CMS version" % (fg(43)))
+
+		if self.provider == 'Wordpress':
+			req = requests.get(self.schema + self.hostname, headers = self.user_agent)
+			soup = BeautifulSoup(req.text, 'html5lib')
+			version = soup.find('meta', attrs={'name':'generator', 'content': re.compile('^WordPress.*$')})
+			version = version["content"] if version else None
+			version = version.split('WordPress ') if version is not None else None
+			version = version[1] if version is not None else None
+
+			if version is not None:				
+				self.results.update({'wp_version': version})
+
 	def get_plugins_cve(self, plugin_name):
 		vulns = []
 		vulnpage = requests.get("https://wpvulndb.com/search?text={}&vuln_type=".format(plugin_name), headers=self.user_agent)		
@@ -457,10 +472,11 @@ class CMSSCAN(object):
 			print(" %s[%s+%s] Performing a %sCMS %sscan" % (fg(45), fg(46), fg(45), fg(15), fg(45)))
 
 		while self.provider is None:
-			self.wpscan()	
+			self.wpscan()			
 			self.joomlascan()			
 			self.magentoscan()
 			self.drupalscan()
+			self.get_version()
 
 			if self.provider is None:
 				self.provider = 'undefined'
@@ -593,7 +609,7 @@ def banner():
 	print("  %s4%s888~  %sJ%s8P                                %s'%s8>                    " % (fg(dark), fg(light),fg(dark), fg(light), fg(dark), fg(light)))
 	print("   %s^%s\"===*\"`                                  \"                     " % (fg(dark), fg(light)))
 	print("")
-	print("   %s------%s-- [ Guapa %sScan v1.0.0 - %sBy okBo%somer 2%s020 ] --%s------\n" % (fg(196),fg(208),fg(226),fg(118),fg(45),fg(19),fg(5)))
+	print("   %s------%s-- [ Guapa %sScan v1.0.0 - %sBy gork%samu 20%s20 ] --%s------\n" % (fg(196),fg(208),fg(226),fg(118),fg(45),fg(19),fg(5)))
 
 def arg_parser():
 	parser = argparse.ArgumentParser(description="Find information about a hostname or ip address")
@@ -638,6 +654,10 @@ def output_print(data):
 		if data["cms"].has_key("provider"):
 			time.sleep(0.5)
 			print("  %s| Provider: %s{} %s".format(data["cms"]["provider"]) % (fg(43), fg(15), fg(43)))
+
+		if data["cms"].has_key("wp_version"):
+			time.sleep(0.5)
+			print("  %s| {} Version: %s{} %s".format(data["cms"]["provider"], data["cms"]["wp_version"]) % (fg(43), fg(15), fg(43)))
 
 		if data["cms"].has_key("theme"):
 			time.sleep(0.5)
