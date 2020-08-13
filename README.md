@@ -1,7 +1,16 @@
-# Guapa Scan
-
 [![forthebadge made-with-python](http://ForTheBadge.com/images/badges/made-with-python.svg)](https://www.python.org/)
+<p align='center'>
+  <a href=""><img src="https://img.shields.io/badge/Version-1.0.0-brightgreen.svg?style=style=flat-square" alt="version"></a>
+  <a href=""><img src="https://img.shields.io/badge/python-2-orange.svg?style=style=flat-square" alt="Python Version"></a>  
+  <a href=""><img src="https://img.shields.io/github/license/Naereen/StrapDown.js.svg" alt="License"></a>
+</p>
 
+## What does this tool do?
+This terminal tool allows you to perform various types of scans over a hostname.
+With the tool you can perform scans of technology used as network scans but the key point is in the CMS scans.
+
+### What is a CMS?
+> A content management system (CMS) manages the creation and modification of digital content. It typically supports multiple users in a collaborative environment. Some noteable examples are: *WordPress, Joomla, Drupal etc*.
 
 WP -> https://www.toyota.com.br/
 Joomla -> https://launch.joomla.org/
