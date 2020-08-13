@@ -45,113 +45,6 @@ def arg_parser():
 
 	return parser.parse_args()
 
-def output_print(data):
-	if data.has_key('ip'):
-		print((" %s[%s+%s] IP: %s%s{}".format(data['ip'])) % (fg(45), fg(46), fg(45), bg(0), fg(15)))
-
-	if data.has_key('loc') and len(data["loc"]) > 0:
-		time.sleep(0.5)
-		print(" %s[%s+%s] Location" % (fg(45), fg(46), fg(45)))
-		for n in data['loc']:
-			time.sleep(0.5)
-			loc_data = data['loc'][n].encode('utf-8')			
-			print("  %s| {}: %s{} %s".format(n.capitalize(), loc_data) % (fg(43), fg(15), fg(43)))
-
-	if data.has_key('dns') and len(data["dns"]) > 0:
-		time.sleep(0.5)
-		print(" %s[%s+%s] DNS" % (fg(45), fg(46), fg(45)))
-		for n in data['dns']:
-			if data['dns'].has_key(n):
-				time.sleep(0.5)
-				if len(data["dns"][n]) == 1:
-					dns_data = data["dns"][n][0].encode('utf-8')
-					print("  %s| {} record: %s{} %s".format(n.upper(), dns_data) % (fg(43), fg(15), fg(43)))
-				else:
-					print("  %s+ {} record:".format(n.upper()) % (fg(43)))
-					for i in data['dns'][n]:
-						print("    %s| {}".format(i) % (fg(15)))
-
-	if data.has_key("cms") and len(data["cms"]) > 0:
-		time.sleep(0.5)
-		print(" %s[%s+%s] CMS" % (fg(45), fg(46), fg(45)))
-
-		if data["cms"].has_key("provider"):
-			time.sleep(0.5)
-			print("  %s| Provider: %s{} %s".format(data["cms"]["provider"]) % (fg(43), fg(15), fg(43)))
-
-		if data["cms"].has_key("wp_version"):
-			time.sleep(0.5)
-			print("  %s| {} Version: %s{} %s".format(data["cms"]["provider"], data["cms"]["wp_version"]) % (fg(43), fg(15), fg(43)))
-
-		if data["cms"].has_key("theme"):
-			time.sleep(0.5)
-			print("  %s| Theme: %s{} %s".format(data["cms"]["theme"]) % (fg(43), fg(15), fg(43)))
-		
-		if data["cms"].has_key("results") and len(data["cms"]["results"]) > 0:
-			for r in data["cms"]["results"]:
-				time.sleep(0.5)
-				results_data = data["cms"]["results"][r].encode('utf-8')				
-				print("  %s| {}: %s{} %s".format(r.capitalize(), results_data) % (fg(43), fg(15), fg(43)))
-
-		if data["cms"].has_key("plugins") and len(data["cms"]["plugins"]) > 0:
-			time.sleep(0.5)
-			print("  %s+ Plugins: " % (fg(43)))
-			for plug in data["cms"]["plugins"]:				
-				time.sleep(0.5)		
-				print("    %s + {}".format(plug["name"]) % (fg(15)))
-				if plug.has_key("vulnerabilities") and len(plug["vulnerabilities"]) > 0:
-					for vuln in plug["vulnerabilities"]:
-						time.sleep(0.5)
-						for prop in vuln:
-							print("          %s| {}: %s{} %s".format(prop, vuln[prop]) % (fg(158), fg(15), fg(43)))
-						print(" ")
-
-		if data["cms"].has_key("users") and len(data["cms"]["users"]) > 0:
-			time.sleep(0.5)
-			print("  %s+ Users: " % (fg(43)))
-			for user in data["cms"]["users"]:
-				print("      %s+" % fg(43))
-				for user_prop in user:
-					user_data =  unicode(user[user_prop]).encode('utf8')
-					print("          %s| {}: %s{} %s".format(user_prop, user_data) % (fg(158), fg(15), fg(43)))
-
-	if data.has_key("whois") and len(data["whois"]) > 0:
-		time.sleep(0.5)
-		print(" %s[%s+%s] WHOIS" % (fg(45), fg(46), fg(45)))
-		for w in data["whois"]:
-			time.sleep(0.5)
-			if isinstance(data["whois"][w], list):
-				print("  %s+ {}".format(w.capitalize()) % (fg(43)))	
-				for wp in data["whois"][w]:
-					time.sleep(0.5)					
-					print("    %s| {}".format(wp) % (fg(15)))	
-			else:
-				whois_data = data["whois"][w]
-				if isinstance(whois_data, unicode):
-					whois_data = unicodedata.normalize('NFKD', whois_data).encode('ascii', 'ignore')
-					whois_data = urllib2.unquote(whois_data)
-					whois_data = whois_data.replace('%u','\\u').decode('unicode_escape')
-					whois_data = whois_data.encode('utf-8')
-												
-				print("  %s| {}: %s{} %s".format(w.capitalize(), whois_data) % (fg(43), fg(15), fg(43)))
-
-	if data.has_key("technologies") and len(data["technologies"]) > 0:
-		time.sleep(0.5)
-		print(" %s[%s+%s] Technologies" % (fg(45), fg(46), fg(45)))
-		for tech in data["technologies"]:
-			time.sleep(0.5)
-			if data["technologies"][tech].has_key("version") and data["technologies"][tech]["version"] != "":
-				print("  %s| {} ~ %s{} %s".format(tech, data["technologies"][tech]["version"]) % (fg(43), fg(15), fg(43)))
-			else:
-				print("  %s| {}".format(tech) % fg(43))
-
-	if data.has_key("subdomains") and len(data["subdomains"]) > 0:
-		time.sleep(0.5)
-		print(" %s[%s+%s] Subdomains" % (fg(45), fg(46), fg(45)))
-		for sub in data["subdomains"]:
-			time.sleep(0.5)
-			print("  %s| {}".format(sub) % fg(43))
-
 def get_data(arg):
 	ip = IPScan(arg.target, debug=arg.debug).get()
 	if arg.s == 'all':
@@ -211,16 +104,16 @@ def main():
 	if arg.output:
 		with open(arg.output, "w+") as f:
 			json.dump(data, f, ensure_ascii=True, indent=4, default=json_util.default)
-	#else:
-		#output_print(data)
-	
+	else:
+		print(json.dumps(data, indent=4))
+		
 
 
 if __name__ == '__main__':
 	try:
 		main()
 	except Exception as ex:
-		print("\033[91m[+] \033[97mError: {}".format(str(ex)))
+		print("\033[91m [+] \033[97mError: {}".format(str(ex)))
 		exit()
 	except KeyboardInterrupt as e:
 		exit()
