@@ -22,7 +22,7 @@ class DNSScan(object):
                 answer = dns.resolver.query(self.hostname, qtype, raise_on_no_answer=False)		    
                 if answer.rrset is not None:
                     if self.debug > 1:
-                        print("  | Getting {} DNS Record".format(qtype))
+                        print("     ╰─ Getting {} DNS Record".format(qtype))
 
                     results.update({qtype: answer.rrset.to_text().split("\n")})
 

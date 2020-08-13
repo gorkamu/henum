@@ -21,6 +21,9 @@ class CMSScan(object):
             raise Exception("that's not a valid hostname")
 
     def scan(self):
+        if self.debug != 0:
+            print(" [+] Performing a CMS scan")
+
         result = {}
         self.get_provider()
 

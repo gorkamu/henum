@@ -180,7 +180,7 @@ def get_data(arg):
 		data = {'ip': ip}
 		for scan in arg.s.split(","):
 			if scan == 'dns':
-				data.update({'dns': DNSScan(hostname=arg.target, debug=arg.debug).get().get()})
+				data.update({'dns': DNSScan(hostname=arg.target, debug=arg.debug).get()})
 			elif scan == 'whois':
 				data.update({'whois': WHOISScan(hostname=arg.target, debug=arg.debug).get()})
 			elif scan == 'loc':
@@ -210,8 +210,11 @@ def main():
 		print(" %s[%s+%s] Wait until the scan will be complete...%s%s" % (fg(45), fg(46), fg(45), fg(15), bg(0)))
 
 	data = get_data(arg)
-		
+
+	print("")	
+	print("")	
 	print(data)
+	exit()
 
 
 

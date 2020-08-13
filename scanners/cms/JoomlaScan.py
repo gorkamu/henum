@@ -16,9 +16,14 @@ class JoomlaScan(object):
             raise Exception("that's not a valid hostname")
 
     def scan(self):
-        if self.debug > 1:
-            print("  | Performing a Wordpress scan")
-            print("  | Checking for Wordpress login page")
+        if self.debug > 1 and self.debug <= 4:
+            print("     ╰─ Performing a Joomla scan")
+
+        if self.debug > 2 and self.debug <= 4:
+            print("        ╰─ Looking for leaked pages")
+
+        if self.debug > 3:    
+            print("           ╰─ Looking for login page")
     
         results = {}
         pages = []
@@ -28,16 +33,16 @@ class JoomlaScan(object):
             results.update({'provider': 'Joomla'})
             pages.append(self.schema + self.hostname + '/administrator/')            
 
-        if self.debug > 1:
-            print("    | Checking for Joomla readme file")
+        if self.debug > 3:
+            print("           ╰─ Looking for readme page")
 
         joomlaReadMeCheck = requests.get(self.schema + self.hostname + '/readme.txt')
         if joomlaReadMeCheck.status_code == 200 and "joomla" in joomlaReadMeCheck.text and "404" not in joomlaReadMeCheck.text:
             results.update({'provider': 'Joomla'})
             pages.append(self.schema + self.hostname + '/readme.txt')
 
-        if self.debug > 1:		
-            print("    | Checking for Joomla update system")
+        if self.debug > 3:	
+            print("           ╰─ Looking for update system")
 
         joomlaDirCheck = requests.get(self.schema + self.hostname + '/media/com_joomlaupdate/')
         if joomlaDirCheck.status_code == 403 and "404" not in joomlaDirCheck.text:

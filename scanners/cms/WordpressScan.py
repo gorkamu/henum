@@ -22,8 +22,11 @@ class WordpressScan(object):
             raise Exception("that's not a valid hostname")
 
     def get_version(self):
-        if self.debug > 1:
-            print("   | Getting WordPress version from meta tag")
+        if self.debug > 2 and self.debug <= 4:
+            print("        ╰─ Enumerating used version")
+
+        if self.debug > 3:
+            print("           ╰─ Getting version from meta tag")
 
         req = requests.get(self.schema + self.hostname, headers = self.headers)
         data = BeautifulSoup(req.text, 'html5lib')
@@ -32,8 +35,8 @@ class WordpressScan(object):
         if version is not None:
             version = version["content"].split('WordPress ')[1]
         else:
-            if self.debug > 1:
-                print("   | Getting WordPress version from feed")
+            if self.debug > 3:
+                print("           ╰─ Getting version from feed")
 
             feed = requests.get(self.schema + self.hostname + "/feed/", headers=self.headers)
             if isinstance(feed, requests.models.Response) and 200 == feed.status_code:
@@ -41,8 +44,8 @@ class WordpressScan(object):
                 if version != []:
                     version = version[0]
                 else:
-                    if self.debug > 1:
-                        print("   | Getting WordPress version from wp-links-opml")
+                    if self.debug > 3:
+                        print("           ╰─ Getting version from wp-links-opml")
 
                     opml = requests.get(self.schema + self.hostname + "/wp-links-opml.php", headers = self.headers)                    
                     if isinstance(opml, requests.models.Response) and 200 == opml.status_code:
@@ -55,8 +58,11 @@ class WordpressScan(object):
         return version
                 
     def get_users(self):
-        if self.debug > 1:
-            print("   | Getting WordPress users from wp-json api")
+        if self.debug > 2 and self.debug <= 4:
+            print("        ╰─ Enumerating users")
+        
+        if self.debug > 3:
+            print("           ╰─ Getting users from wp-json api")
 
         users = []
         req = urllib.request.Request(self.schema + self.hostname + "/wp-json/wp/v2/users", headers = self.headers)
@@ -74,8 +80,8 @@ class WordpressScan(object):
             pass        
         
         if len(users) < 0:
-            if self.debug > 1:
-                print("   | Getting WordPress users from jetpack api")
+            if self.debug > 3:
+                print("           ╰─ Getting users from Jetpack API")
 
             jetpack = requests.get('https://public-api.wordpress.com/rest/v1.1/sites/'+ self.hostname + '/posts?number=100&pretty=true&fields=author', headers = self.headers)
             if isinstance(jetpack, requests.models.Response) and jetpack.status_code == 403:
@@ -106,8 +112,11 @@ class WordpressScan(object):
         return users
 
     def get_theme(self):
-        if self.debug > 1:
-            print("   | Getting Wordpress theme from link meta-tag")
+        if self.debug > 2 and self.debug <= 4:
+            print("        ╰─ Enumerating used theme")
+
+        if self.debug > 3:
+            print("           ╰─ Getting theme from link meta-tag")
 
         default_theme = ''
         req = requests.get(self.schema + self.hostname, headers = self.headers)
@@ -131,15 +140,18 @@ class WordpressScan(object):
         return default_theme
 
     def get_plugins(self):
-        if self.debug > 1:
-            print("   | Getting Wordpress plugins from source")
-
+        if self.debug > 2 and self.debug <= 4:
+            print("        ╰─ Enumerating used plugins")
+            
         plugins = []
         results = []
 
         if self.intense:
             plugins = self.get_bruteforce_plugins()
         else:
+            if self.debug > 3:
+                print("           ╰─ Getting plugins from source")
+            
             req = requests.get(self.schema + self.hostname, headers = self.headers)
             plug_regex = re.compile('wp-content/plugins/([^/]+)/.+')
             plugins = plug_regex.findall(req.text)
@@ -156,7 +168,7 @@ class WordpressScan(object):
     
     def get_bruteforce_plugins(self):
         if self.debug > 1:
-            print("   | Getting Wordpress plugins by bruteforce attack")
+            print("        ╰─ Getting WordPress plugins by bruteforce attack")
 
         results = []
         plugins_wordlist_path = "wordlists/wp_plugins.txt"
@@ -232,9 +244,14 @@ class WordpressScan(object):
         return vulns
 
     def scan(self):
-        if self.debug > 1:
-            print("  | Performing a Wordpress scan")
-            print("  | Checking for Wordpress login page")
+        if self.debug > 1 and self.debug <= 4:
+            print("     ╰─ Performing a WordPress scan")
+
+        if self.debug > 2 and self.debug <= 4:
+            print("        ╰─ Looking for leaked pages")
+
+        if self.debug > 3:
+            print("           ╰─ Looking for login page")
 
         results = {}
         pages = []
@@ -244,24 +261,24 @@ class WordpressScan(object):
             results.update({'provider': 'WordPress'})
             pages.append(self.schema + self.hostname + '/wp-login.php')
 
-        if self.debug > 1:
-            print("  | Checking for Wordpress admin page")	
+        if self.debug > 3:
+            print("           ╰─ Looking for admin page")
 
         wpAdminCheck = requests.get(self.schema + self.hostname + '/wp-admin', headers=self.headers)
         if wpAdminCheck.status_code == 200 and "user_login" in wpAdminCheck.text and "404" not in wpLoginCheck.text:
             results.update({'provider': 'WordPress'})
             pages.append(self.schema + self.hostname + '/wp-admin')
 
-        if self.debug > 1:		
-            print("  | Checking for Wordpress upgrade system")
+        if self.debug > 3:	
+            print("           ╰─ Looking for update system")
 
         wpAdminUpgradeCheck = requests.get(self.schema + self.hostname + '/wp-admin/upgrade.php', headers=self.headers)
         if wpAdminUpgradeCheck.status_code == 200 and "404" not in wpAdminUpgradeCheck.text and "WordPress" in wpAdminUpgradeCheck.text:
             results.update({'provider': 'WordPress'})
             pages.append(self.schema + self.hostname + '/wp-admin/upgrade.php')
 
-        if self.debug > 1:
-            print("  | Checking for Wordpress readme page")
+        if self.debug > 3:
+            print("           ╰─ Looking for readme page")
 
         wpAdminReadMeCheck = requests.get(self.schema + self.hostname + '/readme.html', headers=self.headers)
         if wpAdminReadMeCheck.status_code == 200 and "404" not in wpAdminReadMeCheck.text and "WordPress" in wpAdminReadMeCheck.text:

@@ -16,9 +16,14 @@ class MagentoScan(object):
             raise Exception("that's not a valid hostname")
 
     def scan(self):
-        if self.debug > 1:
-            print("  | Performing a Magento scan")
-            print("  | Checking for Magento login page")
+        if self.debug > 1 and self.debug <= 4:
+            print("     ╰─ Performing a Magento scan")
+
+        if self.debug > 2 and self.debug <= 4:
+            print("        ╰─ Looking for leaked pages")
+
+        if self.debug > 3:      
+            print("           ╰─ Looking for login page")
     
         results = {}
         pages = []
@@ -27,32 +32,33 @@ class MagentoScan(object):
         if magentoRelNotesCheck.status_code == 200 and 'magento' in magentoRelNotesCheck.text:
             results.update({'provider': 'Magento'})
             pages.append(self.schema + self.hostname + '/RELEASE_NOTES.txt')
-        if self.debug > 1:		
-            print("    | Checking for Magento cookies script")
+        
+        if self.debug > 3:	
+            print("           ╰─ Looking for Magento cookies script")
 
         magentoCookieCheck = requests.get(self.schema + self.hostname + '/js/mage/cookies.js')
         if magentoCookieCheck.status_code == 200 and "404" not in magentoCookieCheck.text:
             results.update({'provider': 'Magento'})
             pages.append(self.schema + self.hostname + '/js/mage/cookies.js')
 
-        if self.debug > 1:		
-            print("    | Checking for Magento index page")
+        if self.debug > 3:
+            print("           ╰─ Looking for index page")
 
         magStringCheck = requests.get(self.schema + self.hostname + '/index.php')
         if magStringCheck.status_code == 200 and '/mage/' in magStringCheck.text or 'magento' in magStringCheck.text:
             results.update({'provider': 'Magento'})
             pages.append(self.schema + self.hostname + '/index.php')
 
-        if self.debug > 1:		
-            print("    | Checking for Magento default styles file")	
+        if self.debug > 3:
+            print("           ╰─ Looking for Magento default styles file")
 
         magentoStylesCSSCheck = requests.get(self.schema + self.hostname + '/skin/frontend/default/default/css/styles.css')
         if magentoStylesCSSCheck.status_code == 200 and "404" not in magentoStylesCSSCheck.text:
             results.update({'provider': 'Magento'})
             pages.append(self.schema + self.hostname + '/skin/frontend/default/default/css/styles.css')
 
-        if self.debug > 1:		
-            print("    | Checking for Magento errors design XML file")	
+        if self.debug > 3:
+            print("           ╰─ Looking for Magento errors design XML file")
         
         mag404Check = requests.get(self.schema + self.hostname + '/errors/design.xml')
         if mag404Check.status_code == 200 and "magento" in mag404Check.text:

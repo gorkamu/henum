@@ -4,7 +4,7 @@
 import re
 import dns.resolver
 import os
-import os.path
+from os import path
 
 class SubdomainScan(object):
     def __init__(self, hostname, debug = 0):
