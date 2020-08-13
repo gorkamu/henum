@@ -15,7 +15,7 @@ class WHOISScan(object):
     def get(self):
         try:
             if self.debug != 0:
-                print(" [+] Performing a Whois scan")
+                print("\033[96m [+] \033[97mPerforming \033[96mWhois \033[97mscan")
 
             results = {}
             domain = whois.whois(self.hostname)

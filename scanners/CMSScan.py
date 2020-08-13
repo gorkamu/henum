@@ -22,7 +22,7 @@ class CMSScan(object):
 
     def scan(self):
         if self.debug != 0:
-            print(" [+] Performing a CMS scan")
+            print("\033[96m [+] \033[97mPerforming \033[96mCMS \033[97mscan")
 
         result = {}
         self.get_provider()

@@ -17,7 +17,7 @@ class LOCScan(object):
 
     def get(self):
         if self.debug != 0:
-            print(" [+] Performing a Location scan")
+            print("\033[96m [+] \033[97mPerforming \033[96mLocation \033[97mscan")
         
         result = {}
         data = urllib.urlopen("https://ipinfo.io/{}/json".format(self.ip))

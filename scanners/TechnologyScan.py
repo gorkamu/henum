@@ -17,7 +17,7 @@ class TechnologyScan(object):
     def get(self):
         try:
             if self.debug != 0:
-                print(" [+] Performing a Technology scan")
+                print("\033[96m [+] \033[97mPerforming \033[96mTechnology \033[97mscan")
             
             result = {}
             w = Wappalyzer()

@@ -16,13 +16,13 @@ class DNSScan(object):
         results = {}
         try:
             if self.debug != 0:
-                print(" [+] Performing a DNS Records scan")
+                print("\033[96m [+] \033[97mPerforming \033[96mDNS Records \033[97mscan")
 
             for qtype in 'A', 'AAAA', 'MX', 'NS', 'TXT', 'SOA', 'CNAME', 'MF','MD':
                 answer = dns.resolver.query(self.hostname, qtype, raise_on_no_answer=False)		    
                 if answer.rrset is not None:
                     if self.debug > 1:
-                        print("     ╰─ Getting {} DNS Record".format(qtype))
+                        print("     ╰─ Getting \033[96m{} \033[97mRecord".format(qtype))
 
                     results.update({qtype: answer.rrset.to_text().split("\n")})
 

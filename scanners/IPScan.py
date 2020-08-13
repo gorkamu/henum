@@ -22,6 +22,6 @@ class IPScan(object):
 
     def get(self):
         if self.debug != 0:
-            print(" [+] Performing an IP Address scan")
+            print("\n\033[96m [+] \033[97mPerforming \033[96mIP Address \033[97mscan")
         
         return self.ip

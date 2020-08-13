@@ -1,7 +1,6 @@
 #!/usr/local/bin python
 #_*_ coding: utf8 _*_
 
-
 import argparse
 import json
 import urllib2
@@ -9,8 +8,6 @@ import time
 import unicodedata
 from os import system
 from bson import json_util
-
-from colored import fg, bg, attr
 
 from scanners.IPScan import IPScan
 from scanners.DNSScan import DNSScan
@@ -20,31 +17,24 @@ from scanners.SubdomainScan import SubdomainScan
 from scanners.TechnologyScan import TechnologyScan
 from scanners.CMSScan import CMSScan
 
+global version
+version = "1.1.0"
 
 def banner():
-	light = 175
-	dark = 197
-	
 	system('clear')
 
-	print("")
-	print("                 %sx%s.    %s.                  %s.%sd``                     " % (fg(dark), fg(light), fg(light), fg(dark), fg(light)))
-	print("       %su%sL       %s8%s88k  %sz%s88u         %su      %s@%s8Ne.   %s.%su         %su     " % (fg(dark), fg(light), fg(dark), fg(light), fg(dark), fg(light), fg(dark), fg(dark), fg(light),fg(dark), fg(light), fg(light)))
-	print("   %s.u%se888Nc..   %s8%s888  %s8%s888      %su%ss888u.   %s8%s8888:u@88N     %su%ss888u.  " % (fg(dark), fg(light), fg(dark), fg(light), fg(dark), fg(light), fg(dark), fg(light), fg(dark), fg(light), fg(dark), fg(light)) )
-	print("  %sd%s88E`\"888E`   %s8%s888  %s8%s88R   %s.@%s88  %s8%s888\"   %s`%s888I  %s8%s88.  %s.@%s88  %s8%s888\" " % (fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light)))
-	print("  %s8%s88E  %s8%s88E    %s8%s888  %s8%s88R   %s9%s888  %s9%s888     %s8%s88I  %s8%s88I  %s9%s888  %s9%s888  " % (fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light)))
-	print("  %s8%s88E  %s8%s88E    %s8%s888  %s8%s88R   %s9%s888  %s9%s888     %s8%s88I  %s8%s88I  %s9%s888  %s9%s888  " % (fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light)))
-	print("  %s8%s88E  %s8%s88E    %s8%s888 %s,%s888B   %s9%s888  %s9%s888   %su%sW888L  %s8%s88'  %s9%s888  %s9%s888  " % (fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light)))
-	print("  %s8%s88& %s.%s888E   %s\"%s8888Y %s8%s888\"  %s9%s888  %s9%s888  %s'*%s88888Nu88P   %s9%s888  %s9%s888  " % (fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light)))
-	print("  %s*%s888\" %s8%s88&    %s`%sY\"   %s'%sYP    %s\"%s888*\"%s\"%s888\" ~ %s'%s88888F`     %s\"%s888*%s\"\"%s888\"  " % (fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light)))
-	print("   %s`%s\"   %s\"%s888E                 %s^%sY\"   %s^%sY'     %s8%s88 ^       %s^%sY\"   %s^%sY'  " % (fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light)))
-	print("  %s.%sdWi   %s`%s88E                               %s*%s8E                    " % (fg(dark), fg(light),fg(dark), fg(light),fg(dark), fg(light)))
-	print("  %s4%s888~  %sJ%s8P                                %s'%s8>                    " % (fg(dark), fg(light),fg(dark), fg(light), fg(dark), fg(light)))
-	print("   %s^%s\"===*\"`                                  \"                     " % (fg(dark), fg(light)))
-	print("")
-	print("   %s------%s-- [ Guapa %sScan v1.0.0 - %sBy gork%samu 20%s20 ] --%s------\n" % (fg(196),fg(208),fg(226),fg(118),fg(45),fg(19),fg(5)))
-	print("%s" % fg(15))
+	print("""
+	
+ ██╗  ██╗ ███████╗ ███╗   ██╗ ██╗   ██╗ ███╗   ███╗
+ ██║  ██║ ██╔════╝ ████╗  ██║ ██║   ██║ ████╗ ████║
+ ███████║ █████╗   ██╔██╗ ██║ ██║   ██║ ██╔████╔██║
+ ██╔══██║ ██╔══╝   ██║╚██╗██║ ██║   ██║ ██║╚██╔╝██║
+ ██║  ██║ ███████╗ ██║ ╚████║ ╚██████╔╝ ██║ ╚═╝ ██║
+ ╚═╝  ╚═╝ ╚══════╝ ╚═╝  ╚═══╝  ╚═════╝  ╚═╝     ╚═╝
 
+ Henum Scan v.{} - By Gorkamu - 2020
+	""".format(version))
+	
 def arg_parser():
 	parser = argparse.ArgumentParser(description="Find information about a hostname or ip address")
 	parser.add_argument('-t', '--target', type=str, required=True, action='store', help='target to get info')
@@ -175,7 +165,7 @@ def get_data(arg):
 		}
 
 		if arg.intense:
-			data.update({'subdomains': SubdomainScan(arg.target, debug=arg.log).get() })
+			data.update({'subdomains': SubdomainScan(arg.target, debug=arg.debug).get() })
 	else:
 		data = {'ip': ip}
 		for scan in arg.s.split(","):
@@ -200,31 +190,29 @@ def get_data(arg):
 	return data
 
 def main():
-	#banner()
+	banner()
 	arg = arg_parser()
 
+	print("\033[92m [+] \033[97mTargeting: \033[92m{}".format(arg.target))
+
+	if arg.output:
+		print("\033[96m [+] \033[97mSaving results on: \033[96m{}".format(arg.output))
+
 	if arg.intense:
-		print(" %s[%s+%s] Warning: %sYou have chosen an %sintense scan. %sThis option will take %ssome time to be completed%s.\n" % (fg(208), fg(196), fg(208), fg(15), fg(208), fg(15), attr(4), attr(0)))
+		print("\033[93m [+] \033[97mWarning: You have chosen an intense scan. This option will take some time to be completed.")
 
 	if arg.debug == 0:
-		print(" %s[%s+%s] Wait until the scan will be complete...%s%s" % (fg(45), fg(46), fg(45), fg(15), bg(0)))
+		print("\033[96m [+] \033[97mWait until the scan will be completed...")
 
 	data = get_data(arg)
 
-	print("")	
-	print("")	
-	print(data)
-	exit()
-
-
-
-	print("\n %s[%s+%s] Scan completed\n" % (fg(46), fg(85), fg(46)))
+	print("\n\033[92m [+] \033[97mScan completed")
 
 	if arg.output:
 		with open(arg.output, "w+") as f:
 			json.dump(data, f, ensure_ascii=True, indent=4, default=json_util.default)
-	else:
-		output_print(data)
+	#else:
+		#output_print(data)
 	
 
 
@@ -232,8 +220,7 @@ if __name__ == '__main__':
 	try:
 		main()
 	#except Exception as ex:
-	#	msg = "\n %s[%s+%s] Error: %s{}\n".format(str(ex))
-	#	print(msg % (fg(9), fg(208), fg(9), fg(15)))
+	#	print("\033[91m[+] \033[97mError: {}".format(str(ex)))
 	#	exit()
 	except KeyboardInterrupt as e:
 		exit()

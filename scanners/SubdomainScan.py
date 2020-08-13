@@ -16,11 +16,12 @@ class SubdomainScan(object):
     
     def get(self):
         if self.debug != 0:
-            print(" [+] Performing a Subdomain scan")
+            print("\033[96m [+] \033[97mPerforming \033[96mSubdomain \033[97mscan")
 
         result = []
-        wordlist = "wordlist/subdomains.txt"
+        wordlist = "wordlists/subdomains.txt"
         wordlist = os.path.join(os.getcwd(), wordlist)
+        
         if path.exists(wordlist):            
             file = open(wordlist)
             subdomains = file.read().split("\n")
@@ -29,7 +30,7 @@ class SubdomainScan(object):
                 try:
                     arecord = dns.resolver.query("{}.{}".format(s, self.hostname), "A")
                     if isinstance(arecord, dns.resolver.Answer):
-                        result.append("{}{}".format(s, self.hostname))                    
+                        result.append("{}.{}".format(s, self.hostname))                    
                 except Exception:
                     pass
         

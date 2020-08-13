@@ -17,7 +17,7 @@ class WordpressScan(object):
             self.debug = debug
             self.schema = 'http://'
             self.headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36'}
-            self.intense = False
+            self.intense = intense
         else:
             raise Exception("that's not a valid hostname")
 
@@ -147,7 +147,7 @@ class WordpressScan(object):
         results = []
 
         if self.intense:
-            plugins = self.get_bruteforce_plugins()
+            plugins = self.get_bruteforce_plugins()        
         else:
             if self.debug > 3:
                 print("           ╰─ Getting plugins from source")
@@ -167,8 +167,8 @@ class WordpressScan(object):
         return results
     
     def get_bruteforce_plugins(self):
-        if self.debug > 1:
-            print("        ╰─ Getting WordPress plugins by bruteforce attack")
+        if self.debug > 3:
+            print("           ╰─ Enumerating WordPress plugins by bruteforce attack")
 
         results = []
         plugins_wordlist_path = "wordlists/wp_plugins.txt"
@@ -245,7 +245,7 @@ class WordpressScan(object):
 
     def scan(self):
         if self.debug > 1 and self.debug <= 4:
-            print("     ╰─ Performing a WordPress scan")
+            print("     ╰─ Performing \033[96mWordPress \033[97mscan")
 
         if self.debug > 2 and self.debug <= 4:
             print("        ╰─ Looking for leaked pages")

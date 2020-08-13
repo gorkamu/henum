@@ -17,7 +17,7 @@ class DrupalScan(object):
 
     def scan(self):
         if self.debug > 1 and self.debug <= 4:
-            print("     ╰─ Performing a Drupal scan")
+            print("     ╰─ Performing \033[96mDrupal \033[97mscan")
 
         if self.debug > 2 and self.debug <= 4:
             print("        ╰─ Looking for leaked pages")
