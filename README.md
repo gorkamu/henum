@@ -21,7 +21,6 @@ Wait until all the dependencies are downloaded and proceed with the point below.
 (**PyV8 must be installed** to run)
 
 ### Dependencies
-- PyV8
 [PyV8](https://github.com/okoye/PyV8)
 
 Note for macos users: If you have problems installing PyV8 you can use PyV8-OS-X:
