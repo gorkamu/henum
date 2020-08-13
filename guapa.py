@@ -219,9 +219,9 @@ def main():
 if __name__ == '__main__':
 	try:
 		main()
-	#except Exception as ex:
-	#	print("\033[91m[+] \033[97mError: {}".format(str(ex)))
-	#	exit()
+	except Exception as ex:
+		print("\033[91m[+] \033[97mError: {}".format(str(ex)))
+		exit()
 	except KeyboardInterrupt as e:
 		exit()
 
