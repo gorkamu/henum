@@ -12,12 +12,29 @@ With the tool you can perform scans of technology used as network scans but the 
 ### What is a CMS?
 > A content management system (CMS) manages the creation and modification of digital content. It typically supports multiple users in a collaborative environment. Some noteable examples are: *WordPress, Joomla, Drupal etc*.
 
-WP -> https://www.toyota.com.br/
-Joomla -> https://launch.joomla.org/
-magento -> http://demo-acm-2.bird.eu/
-drupal -> https://www.drupal.org/
+## How to install it
+To install henum scanner just type the following command:
+```python
+pip install -r requirements.txt
+```
+Wait until all the dependencies are downloaded and proceed with the point below.
+(**PyV8 must be installed** to run)
 
+### Dependencies
+- PyV8
+[PyV8](https://github.com/okoye/PyV8)
 
-CMS Detector -> https://github.com/robwillisinfo/cms-detector.py/blob/master/cms-detector.py
+Note for macos users: If you have problems installing PyV8 you can use PyV8-OS-X:
+```python
+pip install -e git://github.com/brokenseal/PyV8-OS-X#egg=pyv8
+```
 
-https://github.com/Tuhinshubhra/CMSeeK/blob/master/VersionDetect/dru.py
+## Sites to tests
+- WP -> https://www.toyota.com.br/
+- Joomla -> https://launch.joomla.org/
+- magento -> http://demo-acm-2.bird.eu/
+- drupal -> https://www.drupal.org/
+
+## References
+- https://github.com/robwillisinfo/cms-detector.py/blob/master/cms-detector.py
+- https://github.com/Tuhinshubhra/CMSeeK/blob/master/VersionDetect/dru.py
