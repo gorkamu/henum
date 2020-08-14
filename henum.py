@@ -40,6 +40,7 @@ def arg_parser():
 	parser.add_argument('-t', '--target', type=str, required=True, action='store', help='target to get info')
 	parser.add_argument('-d', '--debug', type=int, required=False, default=0, action='store', help='debug level | 1=general response | 2=specific response')	
 	parser.add_argument('-o', '--output', type=str, required=False, action='store', help='path to output the json response')
+	parser.add_argument('-k', '--key', type=str, required=False, action='store', help='wpvulndb.com API Key to find WordPress plugin vulnerabilities')
 	parser.add_argument('-i', '--intense', default=False, action='store_true', help='intense scan')
 	parser.add_argument('-s', '-scan', type=str, required=False, action='store', default='all', help="type of scans to perform [dns|whois|loc|cms|technologies|subdomains] comma separated")
 
@@ -53,7 +54,7 @@ def get_data(arg):
 			'dns': DNSScan(hostname=arg.target, debug=arg.debug).get(),
 			'whois': WHOISScan(hostname=arg.target, debug=arg.debug).get(),
 			'loc': LOCScan(ip=ip, debug=arg.debug).get(),
-			'cms': CMSScan(hostname=arg.target, debug=arg.debug, intense=arg.intense).scan(),
+			'cms': CMSScan(hostname=arg.target, debug=arg.debug, intense=arg.intense, wpvuln_apikey=arg.key).scan(),
 			'technologies': TechnologyScan(hostname=arg.target, debug=arg.debug).get()
 		}
 
@@ -69,7 +70,7 @@ def get_data(arg):
 			elif scan == 'loc':
 				data.update({'loc': LOCScan(ip=ip, debug=arg.debug).get()})
 			elif scan == 'cms':
-				data.update({'cms': CMSScan(hostname=arg.target, debug=arg.debug, intense=arg.intense).scan()} )
+				data.update({'cms': CMSScan(hostname=arg.target, debug=arg.debug, intense=arg.intense, wpvuln_apikey=arg.key).scan()} )
 			elif scan == 'technologies':
 				data.update({'technologies': TechnologyScan(hostname=arg.target, debug=arg.debug).get()})
 			elif scan == 'subdomains':
@@ -90,6 +91,9 @@ def main():
 
 	if arg.output:
 		print("\033[96m [+] \033[97mSaving results on: \033[96m{}".format(arg.output))
+
+	if arg.key:
+		print("\033[96m [+] \033[97mWP Vuln API Key: \033[96m{}".format(arg.key))		
 
 	if arg.intense:
 		print("\033[93m [+] \033[97mWarning: You have chosen an intense scan. This option will take some time to be completed.")
@@ -112,9 +116,9 @@ def main():
 if __name__ == '__main__':
 	try:
 		main()
-	except Exception as ex:
-		print("\033[91m [+] \033[97mError: {}".format(str(ex)))
-		exit()
+	#except Exception as ex:
+	#	print("\033[91m [+] \033[97mError: {}".format(str(ex)))
+	#	exit()
 	except KeyboardInterrupt as e:
 		exit()
 

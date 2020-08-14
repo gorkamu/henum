@@ -11,13 +11,14 @@ import os.path
 from bs4 import BeautifulSoup
 
 class WordpressScan(object):
-    def __init__(self, hostname, debug = 0, intense = False):
+    def __init__(self, hostname, debug = 0, intense = False, wpvuln_apikey = None):
         if re.match(r"[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9](?:\.[a-zA-Z]{2,})+", hostname):
             self.hostname = hostname
             self.debug = debug
             self.schema = 'http://'
             self.headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36'}
             self.intense = intense
+            self.wpvuln_apikey = wpvuln_apikey
         else:
             raise Exception("that's not a valid hostname")
 
@@ -156,13 +157,19 @@ class WordpressScan(object):
             plug_regex = re.compile('wp-content/plugins/([^/]+)/.+')
             plugins = plug_regex.findall(req.text)
 
+        plugins = list(dict.fromkeys(plugins))
+
         if len(plugins) > 0:
             for plugin in plugins:
-                vulns = self.get_vulnerabilities(plugin)
-                if len(vulns) > 0:
-                    results.append({'name': plugin, 'vulnerabilities': vulns})
+                if self.wpvuln_apikey is not None:
+                    vulns = self.get_vulnerabilities(plugin)
+                    
+                    if vulns is not None:
+                        results.append(vulns)
+                    else:
+                        results.append({plugin: {}})
                 else:
-                    results.append({'name': plugin})
+                    results.append({plugin: {}})
 
         return results
     
@@ -189,60 +196,15 @@ class WordpressScan(object):
         return results
         
     def get_vulnerabilities(self, plugin):
-        vulns = []
-        vulnpage = requests.get("https://wpvulndb.com/search?text={}&vuln_type=".format(plugin), headers=self.headers)
-        if 200 == vulnpage.status_code and "No results found." not in vulnpage.text:
-            data = BeautifulSoup(vulnpage.text, 'html.parser')
-            data = data.find(id='search-results').find('table').find('tbody').find_all('tr')
+        if self.debug > 2 and self.debug <= 4:
+            print("        ╰─ Enumerating plugins vulnerabilities")
 
-            for row in data:
-				vuln = {}
-				cols = row.find_all('td')
-				cols = [ele.text.strip() for ele in cols]
-				vuln_url = "https://wpvulndb.com/vulnerabilities/{}".format(cols[0])				
-				vuln_name = cols[2].strip()
-				vuln_info = requests.get(vuln_url, headers=self.user_agent)				
-				
-				if vuln_info.status_code == 200:
-					vuln_site = BeautifulSoup(vuln_info.content, 'html.parser')
-					vuln_fixed = vuln_site.findAll("div", {"class": "fixed-in"})				
-					if len(vuln_fixed) > 0:
-						vuln_fixed = vuln_fixed[0].text
-						if "fixed in version" in vuln_fixed:
-							vuln_fixed = vuln_fixed[17:len(vuln_fixed)].strip()
-
-					vuln = {
-						'name': vuln_name,
-						'fixed_in': vuln_fixed
-					}
-
-					for link in vuln_site.findAll('a', attrs={'href': re.compile("^https://")}):
-						if "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE" in link.get('href'):
-							cve_link = link.get('href')
-							cve_no = cve_link[51:len(cve_link)]
-							vuln.update({'cve_link': cve_link})
-							vuln.update({'cve': cve_no})
-			    		
-						if "https://www.exploit-db.com" in link.get('href'):
-							exploit_link = link.get('href')
-							exploit_no = exploit_link.split("/")[-2]							
-							vuln.update({'exploit_link': exploit_link})
-							vuln.update({'exploit': exploit_no})
-
-						if "https://cwe.mitre.org/data/definitions" in link.get('href'):
-							cwe_link = link.get('href')
-							cwe = cwe_link[39:len(cwe_link)-5]
-							vuln.update({'cwe_link': cwe_link})
-							vuln.update({'cwe': cwe})
-
-					vuln_type = vuln_site.findAll("td", string="Type")[0].findNext("td")
-					if vuln_type is not None:
-						vuln.update({'type': vuln_type.text})					
-						
-					vulns.append(vuln)
-
-        return vulns
-
+        self.headers.update({'Authorization': 'Token token=' + self.wpvuln_apikey})
+        req = requests.get("https://wpvulndb.com/api/v3/plugins/{}".format(plugin), headers=self.headers)
+        
+        if req.status_code == 200:
+            return req.json()
+            
     def scan(self):
         if self.debug > 1 and self.debug <= 4:
             print("     ╰─ Performing \033[96mWordPress \033[97mscan")

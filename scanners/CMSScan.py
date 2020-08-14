@@ -8,7 +8,7 @@ from scanners.cms.DrupalScan import DrupalScan
 from scanners.cms.MagentoScan import MagentoScan
 
 class CMSScan(object):
-    def __init__(self, hostname, debug = 0, intense = False):
+    def __init__(self, hostname, debug = 0, intense = False, wpvuln_apikey = None):
         if re.match(r"[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9](?:\.[a-zA-Z]{2,})+", hostname):
             self.hostname = hostname.strip()
             self.debug = debug
@@ -17,6 +17,7 @@ class CMSScan(object):
             self.user_agent = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36'}
             self.scan_result = {}
             self.scanner = None
+            self.wpvuln_apikey = wpvuln_apikey
         else:
             raise Exception("that's not a valid hostname")
 
@@ -52,7 +53,12 @@ class CMSScan(object):
         scanners = ['WordpressScan', 'JoomlaScan', 'DrupalScan', 'MagentoScan']
         for scannername in scanners:
             scanner = globals()[scannername]
-            data = scanner(self.hostname, self.debug, self.intense)
+
+            key = None
+            if 'WordpressScan' == scannername:
+                key = self.wpvuln_apikey
+
+            data = scanner(self.hostname, self.debug, self.intense, key)
             scan_data = data.scan()
 
             if len(scan_data) > 0 and scan_data.has_key("provider"):
