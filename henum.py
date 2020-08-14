@@ -16,6 +16,7 @@ from scanners.LOCScan import LOCScan
 from scanners.SubdomainScan import SubdomainScan
 from scanners.TechnologyScan import TechnologyScan
 from scanners.CMSScan import CMSScan
+from scanners.TracerouteScan import TracerouteScan
 
 global version
 version = "1.1.0"
@@ -55,7 +56,8 @@ def get_data(arg):
 			'whois': WHOISScan(hostname=arg.target, debug=arg.debug).get(),
 			'loc': LOCScan(ip=ip, debug=arg.debug).get(),
 			'cms': CMSScan(hostname=arg.target, debug=arg.debug, intense=arg.intense, wpvuln_apikey=arg.key).scan(),
-			'technologies': TechnologyScan(hostname=arg.target, debug=arg.debug).get()
+			'technologies': TechnologyScan(hostname=arg.target, debug=arg.debug).get(),
+			'traceroute': TracerouteScan(ip, debug=arg.debug).traceroute(),
 		}
 
 		if arg.intense:
@@ -72,12 +74,14 @@ def get_data(arg):
 			elif scan == 'cms':
 				data.update({'cms': CMSScan(hostname=arg.target, debug=arg.debug, intense=arg.intense, wpvuln_apikey=arg.key).scan()} )
 			elif scan == 'technologies':
-				data.update({'technologies': TechnologyScan(hostname=arg.target, debug=arg.debug).get()})
+				data.update({'technologies': TechnologyScan(hostname=arg.target, debug=arg.debug).get()})			
 			elif scan == 'subdomains':
 				if arg.intense:
 					data.update({'subdomains': SubdomainScan(hostname=arg.target, debug=arg.debug).get() })
 				else:
 					raise Exception("You have to specify the intense scan option with this scan type")
+			elif scan == 'traceroute':
+				data.update({'traceroute': TracerouteScan(ip, debug=arg.debug).traceroute()})
 			else:
 				continue
 
@@ -114,11 +118,11 @@ def main():
 
 
 if __name__ == '__main__':
-	try:
+	try:	
 		main()
-	#except Exception as ex:
-	#	print("\033[91m [+] \033[97mError: {}".format(str(ex)))
-	#	exit()
+	except Exception as ex:
+		print("\033[91m [+] \033[97mError: {}".format(str(ex)))
+		exit()
 	except KeyboardInterrupt as e:
 		exit()
 
