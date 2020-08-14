@@ -28,10 +28,17 @@ class CMSScan(object):
         self.get_provider()
 
         if {} != self.scan_result and self.scanner is not None:
-            result.update({'version': self.scanner.get_version()})
-            result.update({'theme': self.scanner.get_theme()})
-            result.update({'users': self.scanner.get_users()})
-            result.update({'plugins': self.scanner.get_plugins()})            
+            if "get_version" in dir(self.scanner):
+                result.update({'version': self.scanner.get_version()})
+
+            if "get_theme" in dir(self.scanner):
+                result.update({'theme': self.scanner.get_theme()})
+            
+            if "get_users" in dir(self.scanner):
+                result.update({'users': self.scanner.get_users()})
+            
+            if "get_plugins" in dir(self.scanner):
+                result.update({'plugins': self.scanner.get_plugins()})            
         
         return self.merge_two_dicts(self.scan_result, result)
 

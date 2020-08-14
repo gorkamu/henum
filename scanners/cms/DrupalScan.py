@@ -61,15 +61,3 @@ class DrupalScan(object):
             results.update({'results': pages})
                 
         return results            
-
-    def get_version(self):
-        pass
-
-    def get_theme(self):
-        pass
-
-    def get_users(self):
-        pass
-
-    def get_plugins(self):
-        pass
