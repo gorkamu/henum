@@ -162,6 +162,9 @@ class WordpressScan(object):
         if len(plugins) > 0:
             for plugin in plugins:
                 if self.wpvuln_apikey is not None:
+                    if self.debug > 2 and self.debug <= 4:
+                        print("        ╰─ Enumerating plugins vulnerabilities")
+
                     vulns = self.get_vulnerabilities(plugin)
                     
                     if vulns is not None:
@@ -196,9 +199,6 @@ class WordpressScan(object):
         return results
         
     def get_vulnerabilities(self, plugin):
-        if self.debug > 2 and self.debug <= 4:
-            print("        ╰─ Enumerating plugins vulnerabilities")
-
         self.headers.update({'Authorization': 'Token token=' + self.wpvuln_apikey})
         req = requests.get("https://wpvulndb.com/api/v3/plugins/{}".format(plugin), headers=self.headers)
         

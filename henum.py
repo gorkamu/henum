@@ -17,6 +17,7 @@ from scanners.SubdomainScan import SubdomainScan
 from scanners.TechnologyScan import TechnologyScan
 from scanners.CMSScan import CMSScan
 from scanners.TracerouteScan import TracerouteScan
+from scanners.ReverseIPLookupScan import ReverseIPLookupScan
 
 global version
 version = "1.1.0"
@@ -43,12 +44,13 @@ def arg_parser():
 	parser.add_argument('-o', '--output', type=str, required=False, action='store', help='path to output the json response')
 	parser.add_argument('-k', '--key', type=str, required=False, action='store', help='wpvulndb.com API Key to find WordPress plugin vulnerabilities')
 	parser.add_argument('-i', '--intense', default=False, action='store_true', help='intense scan')
-	parser.add_argument('-s', '-scan', type=str, required=False, action='store', default='all', help="type of scans to perform [dns|whois|loc|cms|technologies|subdomains] comma separated")
+	parser.add_argument('-s', '-scan', type=str, required=False, action='store', default='all', help="type of scans to perform [ip|dns|whois|traceroute|reverse_ip_lookup|loc|cms|technologies|subdomains] comma separated")
 
 	return parser.parse_args()
 
 def get_data(arg):
 	ip = IPScan(arg.target, debug=arg.debug).get()
+
 	if arg.s == 'all':
 		data = { 
 			'ip': ip,
@@ -58,6 +60,7 @@ def get_data(arg):
 			'cms': CMSScan(hostname=arg.target, debug=arg.debug, intense=arg.intense, wpvuln_apikey=arg.key).scan(),
 			'technologies': TechnologyScan(hostname=arg.target, debug=arg.debug).get(),
 			'traceroute': TracerouteScan(ip, debug=arg.debug).traceroute(),
+			'reverse_ip_lookup': ReverseIPLookupScan(ip=ip, debug=arg.debug).scan()
 		}
 
 		if arg.intense:
@@ -82,6 +85,8 @@ def get_data(arg):
 					raise Exception("You have to specify the intense scan option with this scan type")
 			elif scan == 'traceroute':
 				data.update({'traceroute': TracerouteScan(ip, debug=arg.debug).traceroute()})
+			elif scan == 'reverse_ip_lookup':
+				data.update({'reverse_ip_lookup': ReverseIPLookupScan(ip=ip, debug=arg.debug).scan()})
 			else:
 				continue
 
@@ -89,7 +94,7 @@ def get_data(arg):
 
 def main():
 	banner()
-	arg = arg_parser()
+	arg = arg_parser()	
 
 	print("\033[92m [+] \033[97mTargeting: \033[92m{}".format(arg.target))
 
@@ -116,9 +121,8 @@ def main():
 		print(json.dumps(data, indent=4))
 		
 
-
 if __name__ == '__main__':
-	try:	
+	try:		
 		main()
 	except Exception as ex:
 		print("\033[91m [+] \033[97mError: {}".format(str(ex)))
