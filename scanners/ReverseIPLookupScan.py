@@ -19,7 +19,7 @@ class ReverseIPLookupScan(object):
 
         result = []
         try:
-            req = requests.post("https://domains.yougetsignal.com/domains.php", headers=self.headers, data={ "remoteAddress": "37.59.219.148"})            
+            req = requests.post("https://domains.yougetsignal.com/domains.php", headers=self.headers, data={ "remoteAddress": self.ip})            
             if req.json() and isinstance(req.json(), dict):
                 data = req.json()
 

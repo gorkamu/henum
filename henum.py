@@ -16,11 +16,11 @@ from scanners.LOCScan import LOCScan
 from scanners.SubdomainScan import SubdomainScan
 from scanners.TechnologyScan import TechnologyScan
 from scanners.CMSScan import CMSScan
-from scanners.TracerouteScan import TracerouteScan
 from scanners.ReverseIPLookupScan import ReverseIPLookupScan
+from scanners.TraceScan import TraceScan
 
 global version
-version = "1.1.0"
+version = "1.1.1"
 
 def banner():
 	system('clear')
@@ -59,7 +59,7 @@ def get_data(arg):
 			'loc': LOCScan(ip=ip, debug=arg.debug).get(),
 			'cms': CMSScan(hostname=arg.target, debug=arg.debug, intense=arg.intense, wpvuln_apikey=arg.key).scan(),
 			'technologies': TechnologyScan(hostname=arg.target, debug=arg.debug).get(),
-			'traceroute': TracerouteScan(ip, debug=arg.debug).traceroute(),
+			'traceroute': TraceScan(ip, debug=arg.debug).get(),
 			'reverse_ip_lookup': ReverseIPLookupScan(ip=ip, debug=arg.debug).scan()
 		}
 
@@ -84,7 +84,7 @@ def get_data(arg):
 				else:
 					raise Exception("You have to specify the intense scan option with this scan type")
 			elif scan == 'traceroute':
-				data.update({'traceroute': TracerouteScan(ip, debug=arg.debug).traceroute()})
+				data.update({'traceroute': TraceScan(ip, debug=arg.debug).get()})
 			elif scan == 'reverse_ip_lookup':
 				data.update({'reverse_ip_lookup': ReverseIPLookupScan(ip=ip, debug=arg.debug).scan()})
 			else:
