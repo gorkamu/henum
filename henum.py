@@ -20,7 +20,7 @@ from scanners.ReverseIPLookupScan import ReverseIPLookupScan
 from scanners.TraceScan import TraceScan
 
 global version
-version = "1.1.1"
+version = "1.1.2"
 
 def banner():
 	system('clear')

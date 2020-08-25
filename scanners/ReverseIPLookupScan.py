@@ -24,7 +24,9 @@ class ReverseIPLookupScan(object):
                 data = req.json()
 
                 if data.has_key("domainArray") and len(data["domainArray"]) > 0:
-                    result = data["domainArray"]
+                    for host in data["domainArray"]:
+                        result.append(host[0])
+                        
         except Exception:
             print(Exception)
 

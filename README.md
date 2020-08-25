@@ -251,6 +251,14 @@ It detects which websites host the same IP address
 ```python
 python henum.py -t example.com -s reverse_ip_lookup
 ```
+```json
+"reverse_ip_lookup": [
+  "www.avesexoticas.org",
+  "ftp.avesexoticas.org",
+  "mx.avesexoticas.org",
+  ...
+]
+```
 
 
 
@@ -263,4 +271,3 @@ python henum.py -t example.com -s reverse_ip_lookup
 ## References
 - https://github.com/robwillisinfo/cms-detector.py/blob/master/cms-detector.py
 - https://github.com/Tuhinshubhra/CMSeeK/blob/master/VersionDetect/dru.py
-- https://github.com/ayeowch/traceroute
