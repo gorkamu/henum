@@ -212,20 +212,28 @@ python henum.py -t example.com -s traceroute
 ```json
 "traceroute": [
     {
-        "hostname": "core-87-router", 
-        "longitude": -74.6381, 
-        "rtt": "1.165 ms", 
-        "hop_num": 1, 
-        "latitude": 40.3699, 
-        "ip_address": "128.112.128.2"
+        "ip": "178.32.135.150", 
+        "host": "be100-104.pao-sv8-bb1-a9.ca.us", 
+        "loc": {
+            "lat": "2.3488", 
+            "city": "Paris", 
+            "lng": "48.8534", 
+            "region": "\u00cele-de-France", 
+            "country": "FR"
+        }, 
+        "ttl": "196.254ms"
     }, 
     {
-        "hostname": "rtr-border-hpcrc-router.princeton.edu", 
-        "longitude": -74.7013, 
-        "rtt": "1.535 ms", 
-        "hop_num": 2, 
-        "latitude": 40.2415, 
-        "ip_address": "128.112.12.110"
+        "ip": "198.27.73.227", 
+        "host": "chi-5-a9.il.us", 
+        "loc": {
+            "lat": "2.3488", 
+            "city": "Paris", 
+            "lng": "48.8534", 
+            "region": "\u00cele-de-France", 
+            "country": "FR"
+        }, 
+        "ttl": "243.975ms"
     }
 }
 ```
