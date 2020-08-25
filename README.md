@@ -35,15 +35,15 @@ pip install -e git://github.com/brokenseal/PyV8-OS-X#egg=pyv8
 ## How it works
 
 ## Available Scan types
-- [IP Scan](https://gitlab.com/gorkamu/henum/-/edit/master/README.md#ip-scan)
-- [DNS Scan](https://gitlab.com/gorkamu/henum/-/edit/master/README.md#dns-scan)
-- [WHOIS Scan](https://gitlab.com/gorkamu/henum/-/edit/master/README.md#whois-scan)
-- [Location Scan](https://gitlab.com/gorkamu/henum/-/edit/master/README.md#location-scan)
-- [CMS Scan](https://gitlab.com/gorkamu/henum/-/edit/master/README.md#cms-scan)
-- [Technologies Scan](https://gitlab.com/gorkamu/henum/-/edit/master/README.md#technologies-scan)
-- [Traceroute Scan](https://gitlab.com/gorkamu/henum/-/edit/master/README.md#traceroute-scan)
-- [Subdomains Scan](https://gitlab.com/gorkamu/henum/-/edit/master/README.md#subdomains-scan)
-- [Reverse IP Lookup Scan](https://gitlab.com/gorkamu/henum/-/edit/master/README.md#reverse-scan)
+- [IP Scan](https://gitlab.com/gorkamu/henum#ip-scan)
+- [DNS Scan](https://gitlab.com/gorkamu/henum#dns-scan)
+- [WHOIS Scan](https://gitlab.com/gorkamu/henum#whois-scan)
+- [Location Scan](https://gitlab.com/gorkamu/henum#location-scan)
+- [CMS Scan](https://gitlab.com/gorkamu/henum#cms-scan)
+- [Technologies Scan](https://gitlab.com/gorkamu/henum#technologies-scan)
+- [Traceroute Scan](https://gitlab.com/gorkamu/henum#traceroute-scan)
+- [Subdomains Scan](https://gitlab.com/gorkamu/henum#subdomains-scan)
+- [Reverse IP Lookup Scan](https://gitlab.com/gorkamu/henum#reverse-scan)
 
 
 ### [IP Scan](#ip-scan)
